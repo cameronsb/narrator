@@ -1,12 +1,12 @@
 'use client'
 
 import {
-  PlaybackControls,
   SlideDisplay,
-  SlideNavigation,
   ScriptPanel,
   ViewerProgress,
   ViewerCounter,
+  ViewerTopBar,
+  ViewerBottomBar,
   ViewerIntro,
 } from '@/components/viewer-state'
 import { useKeyboardNavigation } from '@/lib/hooks/use-keyboard-navigation'
@@ -21,13 +21,17 @@ function ViewerStateContent() {
   useKeyboardNavigation()
 
   return (
-    <div className="bg-surface min-h-screen">
+    <div className="bg-surface min-h-screen pb-16">
       <ViewerIntro />
+      {/* Top bar: Progress, Exit button, Counter */}
       <ViewerProgress />
+      <ViewerTopBar />
       <ViewerCounter />
-      <PlaybackControls />
+      {/* Main content */}
       <SlideDisplay />
-      <SlideNavigation />
+      {/* Bottom bar: All playback controls */}
+      <ViewerBottomBar />
+      {/* Side panel: Script */}
       <ScriptPanel />
     </div>
   )
