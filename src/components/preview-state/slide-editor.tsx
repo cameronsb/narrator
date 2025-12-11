@@ -132,10 +132,10 @@ function AddSlideButton({ onClick, label }: { onClick: () => void; label: string
   return (
     <div className="flex justify-center py-1">
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         onClick={onClick}
-        className="text-muted-foreground hover:text-foreground hover:bg-brand-100 h-7 gap-1.5 rounded-full px-3 text-xs transition-all"
+        className="h-7 gap-1.5 rounded-full border-white/30 bg-white/10 px-3 text-xs text-white/70 transition-all hover:border-white/50 hover:bg-white/20 hover:text-white"
         aria-label={label}
       >
         <Plus className="h-3.5 w-3.5" />

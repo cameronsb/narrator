@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Play, Loader2, Save } from 'lucide-react'
+import { ArrowLeft, Play, Loader2, Save, RotateCcw } from 'lucide-react'
 import { useNarratorStore } from '@/lib/store'
 import { toast } from 'sonner'
 import { useState } from 'react'
@@ -17,6 +17,9 @@ export function PreviewHeader() {
   const setAudioUrls = useNarratorStore((s) => s.setAudioUrls)
   const setCurrentSlide = useNarratorStore((s) => s.setCurrentSlide)
   const saveCurrentPresentation = useNarratorStore((s) => s.saveCurrentPresentation)
+  const isContentDirty = useNarratorStore((s) => s.isContentDirty)
+  const getContentHash = useNarratorStore((s) => s.getContentHash)
+  const setLastGeneratedContentHash = useNarratorStore((s) => s.setLastGeneratedContentHash)
 
   const [showSaveInput, setShowSaveInput] = useState(false)
   const [saveName, setSaveName] = useState('')
@@ -48,6 +51,12 @@ export function PreviewHeader() {
     setSaveName('')
   }
 
+  const handleWatch = () => {
+    if (!presentationData) return
+    setCurrentSlide(0)
+    setAppState('viewer')
+  }
+
   const handleGenerateAudio = async () => {
     if (!presentationData) return
 
@@ -58,6 +67,9 @@ export function PreviewHeader() {
       presentationData.metadata.titleScript,
       ...presentationData.slides.map((s) => s.script),
     ]
+
+    // Capture the content hash before generation
+    const contentHash = getContentHash()
 
     try {
       const response = await fetch('/api/generate-audio', {
@@ -78,6 +90,7 @@ export function PreviewHeader() {
 
       setLoadingProgress(100)
       setAudioUrls(urlMap)
+      setLastGeneratedContentHash(contentHash)
       setCurrentSlide(0)
       setLoading(false)
       setAppState('viewer')
@@ -87,12 +100,15 @@ export function PreviewHeader() {
       // Proceed without audio for demo
       setLoadingProgress(100)
       setAudioUrls({})
+      setLastGeneratedContentHash(contentHash)
       setCurrentSlide(0)
       setLoading(false)
       setAppState('viewer')
       toast.info('Presenting without audio (API unavailable)')
     }
   }
+
+  const isDirty = isContentDirty()
 
   return (
     <div className="mb-8 space-y-4">
@@ -116,10 +132,24 @@ export function PreviewHeader() {
             <Save className="mr-2 h-4 w-4" />
             {showSaveInput ? 'Confirm Save' : 'Save'}
           </Button>
+          {!isDirty && (
+            <Button
+              onClick={handleWatch}
+              disabled={isLoading}
+              className="text-primary bg-white hover:bg-white/90"
+            >
+              <Play className="mr-2 h-4 w-4" />
+              Watch
+            </Button>
+          )}
           <Button
             onClick={handleGenerateAudio}
             disabled={isLoading}
-            className="text-primary bg-white hover:bg-white/90"
+            variant={isDirty ? 'default' : 'outline'}
+            className={isDirty
+              ? "text-primary bg-white hover:bg-white/90"
+              : "border-white/30 bg-white/20 text-white hover:bg-white/30"
+            }
           >
             {isLoading ? (
               <>
@@ -128,8 +158,8 @@ export function PreviewHeader() {
               </>
             ) : (
               <>
-                <Play className="mr-2 h-4 w-4" />
-                Generate Audio & Present
+                <RotateCcw className="mr-2 h-4 w-4" />
+                {isDirty ? 'Generate Audio & Present' : 'Regenerate Audio'}
               </>
             )}
           </Button>

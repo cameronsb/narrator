@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppState, PresentationData, Style, Voice } from './types'
+import type { AppState, NarratorExportFile, PresentationData, Style, Voice } from './types'
 import { indexedDBStorage, migrateFromLocalStorage } from './indexed-db'
 
 export interface SavedPresentation {
@@ -53,6 +53,12 @@ interface NarratorStore {
   audioUrls: Record<number, string>
   setAudioUrls: (urls: Record<number, string>) => void
 
+  // Content hash tracking for dirty state detection
+  lastGeneratedContentHash: string | null
+  setLastGeneratedContentHash: (hash: string | null) => void
+  getContentHash: () => string
+  isContentDirty: () => boolean
+
   // Loading state
   isLoading: boolean
   loadingText: string
@@ -70,6 +76,7 @@ interface NarratorStore {
   saveCurrentPresentation: (name: string) => void
   loadPresentation: (id: string) => void
   deletePresentation: (id: string) => void
+  importPresentation: (data: NarratorExportFile, mode: 'view' | 'edit') => void
 
   // Actions
   reset: () => void
@@ -94,6 +101,7 @@ const initialState = {
   loadingProgress: 0,
   isDemoMode: false,
   savedPresentations: [],
+  lastGeneratedContentHash: null as string | null,
 }
 
 export const useNarratorStore = create<NarratorStore>()(
@@ -199,6 +207,35 @@ export const useNarratorStore = create<NarratorStore>()(
       setScriptPanelOpen: (scriptPanelOpen) => set({ scriptPanelOpen }),
       setAudioUrls: (audioUrls) => set({ audioUrls }),
 
+      // Content hash tracking
+      setLastGeneratedContentHash: (lastGeneratedContentHash) => set({ lastGeneratedContentHash }),
+
+      getContentHash: () => {
+        const { presentationData, voice } = get()
+        if (!presentationData) return ''
+        // Create a deterministic hash from presentation content and voice
+        const content = JSON.stringify({
+          metadata: presentationData.metadata,
+          slides: presentationData.slides,
+          voice,
+        })
+        // Simple hash function
+        let hash = 0
+        for (let i = 0; i < content.length; i++) {
+          const char = content.charCodeAt(i)
+          hash = ((hash << 5) - hash) + char
+          hash = hash & hash // Convert to 32bit integer
+        }
+        return hash.toString(36)
+      },
+
+      isContentDirty: () => {
+        const { lastGeneratedContentHash, getContentHash, audioUrls } = get()
+        // If no audio has been generated yet, content is "dirty"
+        if (!lastGeneratedContentHash || Object.keys(audioUrls).length === 0) return true
+        return getContentHash() !== lastGeneratedContentHash
+      },
+
       setLoading: (isLoading, loadingText = '', loadingSubtext = '') =>
         set({ isLoading, loadingText, loadingSubtext, loadingProgress: 0 }),
 
@@ -227,10 +264,11 @@ export const useNarratorStore = create<NarratorStore>()(
       },
 
       loadPresentation: (id: string) => {
-        const { savedPresentations } = get()
+        const { savedPresentations, getContentHash } = get()
         const presentation = savedPresentations.find((p) => p.id === id)
         if (!presentation) return
 
+        // Set the presentation data first
         set({
           presentationData: presentation.presentationData,
           audioUrls: presentation.audioUrls,
@@ -239,6 +277,12 @@ export const useNarratorStore = create<NarratorStore>()(
           appState: 'preview',
           currentSlide: 0,
         })
+
+        // Calculate and set the content hash if audio exists
+        if (Object.keys(presentation.audioUrls).length > 0) {
+          const hash = getContentHash()
+          set({ lastGeneratedContentHash: hash })
+        }
       },
 
       deletePresentation: (id: string) => {
@@ -246,6 +290,38 @@ export const useNarratorStore = create<NarratorStore>()(
         set({
           savedPresentations: savedPresentations.filter((p) => p.id !== id),
         })
+      },
+
+      importPresentation: (data: NarratorExportFile, mode: 'view' | 'edit') => {
+        const { savedPresentations, getContentHash } = get()
+
+        // Create a new saved presentation from the import data
+        const newPresentation: SavedPresentation = {
+          id: `pres_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+          name: data.name,
+          savedAt: Date.now(),
+          presentationData: data.presentationData,
+          audioUrls: data.audioUrls,
+          style: data.style,
+          voice: data.voice,
+        }
+
+        // Save to library and set as current
+        set({
+          savedPresentations: [...savedPresentations, newPresentation],
+          presentationData: data.presentationData,
+          audioUrls: data.audioUrls,
+          style: data.style,
+          voice: data.voice,
+          currentSlide: 0,
+          appState: mode === 'view' ? 'viewer' : 'preview',
+        })
+
+        // Calculate and set the content hash if audio exists
+        if (Object.keys(data.audioUrls).length > 0) {
+          const hash = getContentHash()
+          set({ lastGeneratedContentHash: hash })
+        }
       },
 
       reset: () => set(initialState),

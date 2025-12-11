@@ -1,8 +1,7 @@
 'use client'
 
 import { useNarratorStore } from '@/lib/store'
-import { Progress } from '@/components/ui/progress'
-import { Loader2, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const MODEL_INFO = {
@@ -18,11 +17,51 @@ const MODEL_INFO = {
   },
 } as const
 
+function PulsingDots() {
+  return (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          className="h-3 w-3 rounded-full bg-primary"
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.5, 1, 0.5],
+          }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            delay: i * 0.2,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ShimmerBar() {
+  return (
+    <div className="w-72 h-2 bg-primary/20 rounded-full overflow-hidden relative">
+      <motion.div
+        className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent"
+        animate={{
+          x: ['-100%', '400%'],
+        }}
+        transition={{
+          duration: 1.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+    </div>
+  )
+}
+
 export function LoadingOverlay() {
   const isLoading = useNarratorStore((s) => s.isLoading)
   const loadingText = useNarratorStore((s) => s.loadingText)
   const loadingSubtext = useNarratorStore((s) => s.loadingSubtext)
-  const loadingProgress = useNarratorStore((s) => s.loadingProgress)
 
   // Determine which model is being used based on loading text
   const isAudioGeneration = loadingText?.toLowerCase().includes('audio')
@@ -37,7 +76,7 @@ export function LoadingOverlay() {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm"
         >
-          <Loader2 className="text-primary mb-6 h-12 w-12 animate-spin" />
+          <PulsingDots />
 
           <h2 className="text-foreground mb-2 text-xl font-semibold">
             {loadingText || 'Loading...'}
@@ -45,9 +84,7 @@ export function LoadingOverlay() {
 
           {loadingSubtext && <p className="text-muted-foreground mb-6">{loadingSubtext}</p>}
 
-          <div className="w-72">
-            <Progress value={loadingProgress} className="h-2" />
-          </div>
+          <ShimmerBar />
 
           {/* Model info */}
           <motion.div

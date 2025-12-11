@@ -29,7 +29,7 @@ export function VoiceSelector() {
                 />
                 <Label
                   htmlFor={`voice-${voiceKey}`}
-                  className="peer-data-[state=checked]:text-primary cursor-pointer rounded-lg border-2 border-white/30 bg-white/10 px-4 py-2 text-white transition-all peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white peer-data-[state=checked]:font-semibold hover:border-white/50 hover:bg-white/20"
+                  className="cursor-pointer rounded-lg border-2 border-white/30 bg-white/10 px-4 py-2 text-white transition-all hover:border-white/50 hover:bg-white/20 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white peer-data-[state=checked]:font-semibold peer-data-[state=checked]:text-primary peer-data-[state=checked]:hover:border-white peer-data-[state=checked]:hover:bg-white/95"
                   title={config.description}
                 >
                   {config.label}
