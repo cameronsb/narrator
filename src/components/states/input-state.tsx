@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   StyleSelector,
@@ -14,15 +14,24 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { NarratorExportFile } from '@/lib/types'
 import { useNarratorStore } from '@/lib/store'
 import { useReducedMotion } from '@/lib/hooks/use-reduced-motion'
+import {
+  useHashRouting,
+  routeToTab,
+  tabToRoute,
+  type HashRoute,
+} from '@/lib/hooks/use-hash-routing'
 
 export function InputState() {
   const savedPresentations = useNarratorStore((s) => s.savedPresentations)
   const prefersReducedMotion = useReducedMotion()
 
-  // Default to Library tab if user has presentations, otherwise Create
-  const [activeTab, setActiveTab] = useState<TabId>(() =>
-    savedPresentations.length > 0 ? 'library' : 'create'
-  )
+  // Hash routing for tabs
+  const defaultRoute: HashRoute = savedPresentations.length > 0 ? 'library' : 'create'
+  const { route, setRoute } = useHashRouting({ defaultRoute })
+
+  // Derive active tab from route
+  const activeTab: TabId = routeToTab(route) ?? 'create'
+
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [pendingImport, setPendingImport] = useState<NarratorExportFile | null>(null)
 
@@ -39,7 +48,7 @@ export function InputState() {
   }
 
   const handleTabChange = (tab: TabId) => {
-    setActiveTab(tab)
+    setRoute(tabToRoute(tab))
   }
 
   // Animation config respecting reduced motion preference
