@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 import type { AppState, PresentationData, Style, Voice } from './types'
+import { indexedDBStorage, migrateFromLocalStorage } from './indexed-db'
 
 export interface SavedPresentation {
   id: string
@@ -265,10 +266,15 @@ export const useNarratorStore = create<NarratorStore>()(
     }),
     {
       name: 'narrator-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: indexedDBStorage,
       partialize: (state) => ({
         savedPresentations: state.savedPresentations,
       }),
     }
   )
 )
+
+// Run migration from localStorage on app start (browser only)
+if (typeof window !== 'undefined') {
+  migrateFromLocalStorage().catch(console.error)
+}
