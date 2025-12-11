@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Play } from 'lucide-react'
 import { useNarratorStore } from '@/lib/store'
@@ -13,12 +13,27 @@ export function ViewerIntro() {
 
   const { play } = useAudio()
 
-  if (!presentationData) return null
-
-  const handleStart = () => {
+  const handleStart = useCallback(() => {
     setVisible(false)
     setTimeout(play, 300)
-  }
+  }, [play])
+
+  // Handle Space key to start presentation
+  useEffect(() => {
+    if (!visible) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === ' ') {
+        e.preventDefault()
+        handleStart()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [visible, handleStart])
+
+  if (!presentationData) return null
 
   return (
     <AnimatePresence>
