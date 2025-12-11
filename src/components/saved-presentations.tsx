@@ -6,6 +6,7 @@ import { useNarratorStore } from '@/lib/store'
 import { Play, Trash2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
+import { ExportButton } from '@/components/export-import'
 
 export function SavedPresentations() {
   const savedPresentations = useNarratorStore((s) => s.savedPresentations)
@@ -108,6 +109,7 @@ export function SavedPresentations() {
                       <Play className="mr-1 h-4 w-4" />
                       Load
                     </Button>
+                    <ExportButton presentation={presentation} />
                     <Button
                       size="sm"
                       variant={deletingId === presentation.id ? 'destructive' : 'outline'}

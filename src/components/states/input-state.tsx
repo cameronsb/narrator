@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   StyleSelector,
@@ -8,9 +9,25 @@ import {
   GenerateButton,
 } from '@/components/input-state'
 import { SavedPresentations } from '@/components/saved-presentations'
+import { ImportZone, ImportDialog } from '@/components/export-import'
 import { motion } from 'framer-motion'
+import type { NarratorExportFile } from '@/lib/types'
 
 export function InputState() {
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [pendingImport, setPendingImport] = useState<NarratorExportFile | null>(null)
+
+  const handleImport = (data: NarratorExportFile) => {
+    setPendingImport(data)
+    setImportDialogOpen(true)
+  }
+
+  const handleDialogClose = (open: boolean) => {
+    setImportDialogOpen(open)
+    if (!open) {
+      setPendingImport(null)
+    }
+  }
   return (
     <div className="bg-surface flex min-h-screen items-center justify-center p-4 sm:p-8">
       <motion.div
@@ -43,6 +60,16 @@ export function InputState() {
 
             {/* Saved Presentations */}
             <SavedPresentations />
+
+            {/* Import Zone */}
+            <ImportZone onImport={handleImport} />
+
+            {/* Import Dialog */}
+            <ImportDialog
+              open={importDialogOpen}
+              onOpenChange={handleDialogClose}
+              data={pendingImport}
+            />
           </CardContent>
         </Card>
       </motion.div>

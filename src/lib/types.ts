@@ -120,3 +120,14 @@ Next steps: Deploy to a cloud provider and add authentication.`,
 } as const
 
 export type ExampleKey = keyof typeof EXAMPLES
+
+// Export file format
+export interface NarratorExportFile {
+  version: '1.0'
+  exportedAt: number
+  name: string
+  presentationData: PresentationData
+  audioUrls: Record<number, string>
+  style: Style
+  voice: Voice
+}
