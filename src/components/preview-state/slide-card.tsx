@@ -43,7 +43,7 @@ export function SlideCard({
   const slide = isTitle
     ? {
         title: presentationData.metadata.title,
-        points: [presentationData.metadata.subtitle],
+        points: presentationData.metadata.subtitle ? [presentationData.metadata.subtitle] : [],
         script: presentationData.metadata.titleScript,
       }
     : presentationData.slides[index]

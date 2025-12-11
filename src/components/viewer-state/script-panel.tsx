@@ -1,7 +1,7 @@
 'use client'
 
 import { useNarratorStore } from '@/lib/store'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 
 export function ScriptPanel() {
   const scriptPanelOpen = useNarratorStore((s) => s.scriptPanelOpen)
@@ -16,6 +16,9 @@ export function ScriptPanel() {
       <SheetContent className="w-[400px] sm:max-w-[400px]">
         <SheetHeader>
           <SheetTitle>Speaker Notes - Slide {currentSlide + 1}</SheetTitle>
+          <SheetDescription className="sr-only">
+            View the speaker script for the current slide
+          </SheetDescription>
         </SheetHeader>
         <div className="mt-6">
           <div className="bg-muted rounded-xl p-5 text-base leading-relaxed">

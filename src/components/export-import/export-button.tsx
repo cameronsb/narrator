@@ -25,6 +25,7 @@ export function ExportButton({ presentation }: ExportButtonProps) {
   return (
     <Button size="sm" variant="outline" onClick={handleExport} title="Export presentation">
       <Download className="h-4 w-4" />
+      <span className="sr-only">Export</span>
     </Button>
   )
 }

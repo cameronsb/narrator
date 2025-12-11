@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useNarratorStore } from '@/lib/store'
-import { Play, Trash2, FileText } from 'lucide-react'
+import { FolderOpen, Trash2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { ExportButton } from '@/components/export-import'
@@ -106,8 +106,8 @@ export function SavedPresentations() {
                       onClick={() => handleLoad(presentation.id, presentation.name)}
                       className="bg-primary hover:bg-primary/90 text-white"
                     >
-                      <Play className="mr-1 h-4 w-4" />
-                      Load
+                      <FolderOpen className="mr-1 h-4 w-4" />
+                      Open
                     </Button>
                     <ExportButton presentation={presentation} />
                     <Button

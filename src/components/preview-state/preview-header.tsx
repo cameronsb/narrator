@@ -132,16 +132,18 @@ export function PreviewHeader() {
             <Save className="mr-2 h-4 w-4" />
             {showSaveInput ? 'Confirm Save' : 'Save'}
           </Button>
-          {!isDirty && (
-            <Button
-              onClick={handleWatch}
-              disabled={isLoading}
-              className="text-primary bg-white hover:bg-white/90"
-            >
-              <Play className="mr-2 h-4 w-4" />
-              Watch
-            </Button>
-          )}
+          <Button
+            onClick={handleWatch}
+            disabled={isLoading}
+            variant={isDirty ? 'outline' : 'default'}
+            className={isDirty
+              ? "border-white/30 bg-white/20 text-white hover:bg-white/30"
+              : "text-primary bg-white hover:bg-white/90"
+            }
+          >
+            <Play className="mr-2 h-4 w-4" />
+            {isDirty ? 'Preview (No Audio)' : 'Present'}
+          </Button>
           <Button
             onClick={handleGenerateAudio}
             disabled={isLoading}
