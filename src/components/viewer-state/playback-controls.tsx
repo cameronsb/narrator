@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Play, Pause, Volume2, VolumeX, FileText, X } from 'lucide-react'
 import { useNarratorStore } from '@/lib/store'
-import { useAudioPlayer } from '@/lib/hooks/use-audio-player'
+import { useAudio } from '@/lib/audio'
 import { useSettings } from '@/lib/hooks/use-settings'
 
 export function PlaybackControls() {
@@ -20,7 +20,7 @@ export function PlaybackControls() {
   const { settings, setVolume, setSpeed } = useSettings()
   const { volume, speed: playbackSpeed } = settings.playback
 
-  const { togglePlayPause, stop } = useAudioPlayer()
+  const { togglePlayPause, stop } = useAudio()
 
   const handleExit = () => {
     stop()

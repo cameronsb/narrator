@@ -4,14 +4,14 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Play } from 'lucide-react'
 import { useNarratorStore } from '@/lib/store'
-import { useAudioPlayer } from '@/lib/hooks/use-audio-player'
+import { useAudio } from '@/lib/audio'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export function ViewerIntro() {
   const [visible, setVisible] = useState(true)
   const presentationData = useNarratorStore((s) => s.presentationData)
 
-  const { play } = useAudioPlayer()
+  const { play } = useAudio()
 
   if (!presentationData) return null
 

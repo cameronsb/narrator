@@ -2,17 +2,28 @@
 
 import { useEffect } from 'react'
 import { useNarratorStore } from '@/lib/store'
-import { useAudioPlayer } from './use-audio-player'
+import { useAudio } from '@/lib/audio'
 
+/**
+ * Keyboard navigation hook for the presentation viewer.
+ *
+ * Controls:
+ * - ArrowLeft: Previous slide
+ * - ArrowRight: Next slide
+ * - Space: Toggle play/pause
+ * - Escape: Stop and exit to preview
+ *
+ * Note: Arrow keys only update currentSlide; the AudioProvider automatically
+ * handles playing the new slide's audio when navigating while playing.
+ */
 export function useKeyboardNavigation() {
   const appState = useNarratorStore((s) => s.appState)
   const currentSlide = useNarratorStore((s) => s.currentSlide)
   const setCurrentSlide = useNarratorStore((s) => s.setCurrentSlide)
   const setAppState = useNarratorStore((s) => s.setAppState)
   const getTotalSlides = useNarratorStore((s) => s.getTotalSlides)
-  const isPlaying = useNarratorStore((s) => s.isPlaying)
 
-  const { togglePlayPause, stop, play } = useAudioPlayer()
+  const { togglePlayPause, stop } = useAudio()
 
   useEffect(() => {
     if (appState !== 'viewer') return
@@ -30,9 +41,6 @@ export function useKeyboardNavigation() {
           e.preventDefault()
           if (currentSlide > 0) {
             setCurrentSlide(currentSlide - 1)
-            if (isPlaying) {
-              setTimeout(play, 100)
-            }
           }
           break
 
@@ -40,9 +48,6 @@ export function useKeyboardNavigation() {
           e.preventDefault()
           if (currentSlide < total - 1) {
             setCurrentSlide(currentSlide + 1)
-            if (isPlaying) {
-              setTimeout(play, 100)
-            }
           }
           break
 
@@ -69,7 +74,5 @@ export function useKeyboardNavigation() {
     setAppState,
     togglePlayPause,
     stop,
-    play,
-    isPlaying,
   ])
 }

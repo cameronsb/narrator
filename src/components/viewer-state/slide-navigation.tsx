@@ -5,19 +5,22 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useNarratorStore } from '@/lib/store'
-import { useAudioPlayer } from '@/lib/hooks/use-audio-player'
 import { useSettings } from '@/lib/hooks/use-settings'
 
+/**
+ * SlideNavigation - Previous/Next buttons and auto-advance toggle.
+ *
+ * Note: This component no longer needs audio controls. The AudioProvider
+ * automatically handles playing the new slide's audio when currentSlide
+ * changes while isPlaying is true.
+ */
 export function SlideNavigation() {
   const currentSlide = useNarratorStore((s) => s.currentSlide)
   const setCurrentSlide = useNarratorStore((s) => s.setCurrentSlide)
   const getTotalSlides = useNarratorStore((s) => s.getTotalSlides)
-  const isPlaying = useNarratorStore((s) => s.isPlaying)
 
   const { settings, setAutoAdvance } = useSettings()
   const { autoAdvance } = settings.playback
-
-  const { play } = useAudioPlayer()
 
   const totalSlides = getTotalSlides()
   const isFirst = currentSlide === 0
@@ -26,18 +29,12 @@ export function SlideNavigation() {
   const handlePrevious = () => {
     if (!isFirst) {
       setCurrentSlide(currentSlide - 1)
-      if (isPlaying) {
-        setTimeout(play, 100)
-      }
     }
   }
 
   const handleNext = () => {
     if (!isLast) {
       setCurrentSlide(currentSlide + 1)
-      if (isPlaying) {
-        setTimeout(play, 100)
-      }
     }
   }
 
