@@ -1,31 +1,35 @@
-# Narrator V2
+# Narrator
 
 Transform any text into AI-narrated presentations with natural voice synthesis.
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8)
-![Radix UI](https://img.shields.io/badge/Radix_UI-Accessible-purple)
+![React](https://img.shields.io/badge/React-19-61dafb)
 
 ## Features
 
 - **AI-Powered Slide Generation** - Claude or GPT-4 structures your content into presentation slides
 - **Natural Voice Synthesis** - OpenAI TTS with 6 voice options (Alloy, Nova, Shimmer, Echo, Onyx, Fable)
-- **Editable Preview** - Review and modify slides before generating audio
+- **Full Slide Editing** - Add, remove, and reorder slides with drag-and-drop
+- **Bullet Management** - Add and remove bullet points per slide
 - **Presentation Viewer** - Full-screen presentation with auto-advance and keyboard navigation
 - **Progressive Degradation** - Works in demo mode without API keys
 - **Accessible by Default** - Built on Radix UI primitives for WCAG compliance
+- **Fully Tested** - 64 unit tests covering store actions and components
 
 ## Tech Stack
 
 | Layer      | Technology                   |
 | ---------- | ---------------------------- |
-| Framework  | Next.js 14 (App Router)      |
-| Language   | TypeScript                   |
+| Framework  | Next.js 16 (App Router)      |
+| Language   | TypeScript 5                 |
 | Styling    | Tailwind CSS 4.0             |
 | Components | ShadCN/UI (Radix primitives) |
 | State      | Zustand                      |
 | Animations | Framer Motion                |
+| Drag & Drop| @dnd-kit                     |
+| Testing    | Vitest + React Testing Library |
 | AI         | Claude API, OpenAI API       |
 
 ## Quick Start
@@ -99,27 +103,22 @@ src/
 
 ## Deployment
 
-Deploy to Vercel with one click:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/narrator-v2&env=ANTHROPIC_API_KEY,OPENAI_API_KEY)
-
-Or manually:
+Deploy to Netlify or Vercel:
 
 ```bash
 npm run build
-npm run start
 ```
 
-## V1 vs V2 Comparison
+Set environment variables in your hosting dashboard:
+- `ANTHROPIC_API_KEY` - For Claude slide generation
+- `OPENAI_API_KEY` - For TTS and fallback slide generation
 
-| Aspect        | V1 (Vanilla)                | V2 (Modern)              |
-| ------------- | --------------------------- | ------------------------ |
-| Architecture  | 1525 lines in one HTML file | Component-based modules  |
-| Accessibility | DIY (broken)                | Radix UI primitives      |
-| Type Safety   | None                        | Full TypeScript          |
-| State         | Global `App` object         | Zustand store            |
-| Styling       | Hand-rolled CSS             | Tailwind + design tokens |
-| Testing       | None                        | Ready for Jest/Vitest    |
+## Testing
+
+```bash
+npm run test        # Watch mode
+npm run test:run    # Single run
+```
 
 ## License
 

@@ -185,28 +185,28 @@ const sensors = useSensors(
 
 ### Color Palette
 
-Uses OKLCH color space for perceptually uniform colors. The palette uses warm amber/stone tones (hue 32-75) for a sophisticated, professional look.
+Uses OKLCH color space for perceptually uniform colors. The palette uses teal/cyan tones (hue 185) for a calm, professional look.
 
 ```css
-/* Brand scale - shifts from golden to reddish-orange */
---brand-50:  oklch(0.98 0.015 75);   /* Lightest - cream */
---brand-100: oklch(0.94 0.03 65);
---brand-200: oklch(0.88 0.06 55);
---brand-300: oklch(0.79 0.09 50);
---brand-400: oklch(0.70 0.12 45);
---brand-500: oklch(0.58 0.13 42);    /* Primary */
---brand-600: oklch(0.50 0.12 40);    /* Surface background */
---brand-700: oklch(0.42 0.10 38);
---brand-800: oklch(0.35 0.08 36);
---brand-900: oklch(0.28 0.06 34);
---brand-950: oklch(0.22 0.04 32);    /* Darkest */
+/* Brand scale - consistent teal hue */
+--brand-50:  oklch(0.98 0.02 185);   /* Lightest */
+--brand-100: oklch(0.94 0.04 185);
+--brand-200: oklch(0.88 0.08 185);
+--brand-300: oklch(0.78 0.11 185);
+--brand-400: oklch(0.68 0.13 185);
+--brand-500: oklch(0.55 0.12 185);   /* Primary */
+--brand-600: oklch(0.47 0.11 185);   /* Surface background */
+--brand-700: oklch(0.40 0.09 185);
+--brand-800: oklch(0.33 0.07 185);
+--brand-900: oklch(0.27 0.05 185);
+--brand-950: oklch(0.20 0.04 185);   /* Darkest */
 ```
 
 **Design rationale:**
 
-- Warm tones feel professional without the "AI template" aesthetic of purple/indigo
-- Reduced chroma (0.015-0.13) for subtlety
-- Hue shifts from 75° (golden) to 32° (amber) as colors darken, creating depth
+- Teal (hue 185°) is calming and professional without the "AI template" aesthetic
+- Consistent hue throughout the scale for visual cohesion
+- Moderate chroma (0.02-0.13) for vibrancy without being overwhelming
 
 ## Testing
 
