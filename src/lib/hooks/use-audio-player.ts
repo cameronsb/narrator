@@ -52,23 +52,24 @@ export function useAudioPlayer() {
     }
   }, [currentSlide, autoAdvance, getTotalSlides, setCurrentSlide, setIsPlaying])
 
-  // Update audio source when slide changes
+  // Update audio source when slide changes or playback starts
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
     const audioUrl = audioUrls[currentSlide]
-    if (audioUrl) {
+    if (audioUrl && audio.src !== audioUrl) {
       audio.src = audioUrl
       audio.playbackRate = playbackSpeed
       audio.muted = isMuted
       audio.volume = calculateVolume(volume)
-
-      if (isPlaying) {
-        audio.play().catch(console.error)
-      }
     }
-  }, [currentSlide, audioUrls, isPlaying, playbackSpeed, isMuted, volume])
+
+    if (isPlaying && audio.paused) {
+      audio.play().catch(console.error)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- playbackSpeed/isMuted/volume handled by dedicated effects; including them here restarts audio on settings change
+  }, [currentSlide, audioUrls, isPlaying])
 
   // Update playback rate
   useEffect(() => {
