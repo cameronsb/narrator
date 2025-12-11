@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useNarratorStore } from '@/lib/store'
-import { FolderOpen, Trash2, FileText, Library, Sparkles, Download, MoreHorizontal } from 'lucide-react'
+import { FolderOpen, Trash2, FileText, Library, Sparkles, Download, MoreHorizontal, PenLine } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { ExportButton } from '@/components/export-import'
@@ -112,8 +112,14 @@ export function LibraryTab({ onSwitchTab }: LibraryTabProps) {
                 <CardContent className="p-4">
                   {/* Card header with icon */}
                   <div className="mb-3 flex items-start justify-between">
-                    <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
-                      <FileText className="text-primary h-5 w-5" />
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                      presentation.isDraft ? 'bg-amber-500/10' : 'bg-primary/10'
+                    }`}>
+                      {presentation.isDraft ? (
+                        <PenLine className="h-5 w-5 text-amber-500" />
+                      ) : (
+                        <FileText className="text-primary h-5 w-5" />
+                      )}
                     </div>
                     {/* Action menu button */}
                     <div className="flex gap-1">
@@ -129,10 +135,17 @@ export function LibraryTab({ onSwitchTab }: LibraryTabProps) {
                     </div>
                   </div>
 
-                  {/* Title */}
-                  <h3 className="mb-2 truncate font-semibold" title={presentation.name}>
-                    {presentation.name}
-                  </h3>
+                  {/* Title with draft indicator */}
+                  <div className="mb-2 flex items-center gap-2">
+                    <h3 className="truncate font-semibold" title={presentation.name}>
+                      {presentation.name}
+                    </h3>
+                    {presentation.isDraft && (
+                      <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-600">
+                        Draft
+                      </span>
+                    )}
+                  </div>
 
                   {/* Metadata */}
                   <div className="text-muted-foreground mb-4 flex flex-wrap items-center gap-x-2 text-xs">

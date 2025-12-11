@@ -20,6 +20,7 @@ export function PreviewHeader() {
   const isContentDirty = useNarratorStore((s) => s.isContentDirty)
   const getContentHash = useNarratorStore((s) => s.getContentHash)
   const setLastGeneratedContentHash = useNarratorStore((s) => s.setLastGeneratedContentHash)
+  const saveAsDraft = useNarratorStore((s) => s.saveAsDraft)
 
   const [showSaveInput, setShowSaveInput] = useState(false)
   const [saveName, setSaveName] = useState('')
@@ -91,6 +92,10 @@ export function PreviewHeader() {
       setLoadingProgress(100)
       setAudioUrls(urlMap)
       setLastGeneratedContentHash(contentHash)
+
+      // Auto-save draft with audio to preserve expensive generated content
+      saveAsDraft()
+
       setCurrentSlide(0)
       setLoading(false)
       setAppState('viewer')

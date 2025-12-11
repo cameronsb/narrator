@@ -11,6 +11,7 @@ export interface SavedPresentation {
   audioUrls: Record<number, string>
   style: Style
   voice: Voice
+  isDraft?: boolean // true = auto-saved working session, not explicitly saved
 }
 
 interface NarratorStore {
@@ -78,6 +79,13 @@ interface NarratorStore {
   deletePresentation: (id: string) => void
   importPresentation: (data: NarratorExportFile, mode: 'view' | 'edit') => void
 
+  // Active session tracking (persisted)
+  activePresentationId: string | null
+  setActivePresentationId: (id: string | null) => void
+  saveAsDraft: () => string | null // Returns the draft ID or null if no data
+  clearActiveSession: () => void
+  tryRecoverSession: () => boolean // Returns true if session was recovered
+
   // Actions
   reset: () => void
   getTotalSlides: () => number
@@ -89,19 +97,20 @@ const initialState = {
   content: '',
   style: 'narrative' as Style,
   voice: 'nova' as Voice,
-  presentationData: null,
+  presentationData: null as PresentationData | null,
   currentSlide: 0,
   isPlaying: false,
   isMuted: false,
   scriptPanelOpen: false,
-  audioUrls: {},
+  audioUrls: {} as Record<number, string>,
   isLoading: false,
   loadingText: '',
   loadingSubtext: '',
   loadingProgress: 0,
   isDemoMode: false,
-  savedPresentations: [],
+  savedPresentations: [] as SavedPresentation[],
   lastGeneratedContentHash: null as string | null,
+  activePresentationId: null as string | null,
 }
 
 export const useNarratorStore = create<NarratorStore>()(
@@ -243,13 +252,138 @@ export const useNarratorStore = create<NarratorStore>()(
 
       setDemoMode: (isDemoMode) => set({ isDemoMode }),
 
+      // Active session tracking
+      setActivePresentationId: (activePresentationId) => set({ activePresentationId }),
+
+      saveAsDraft: () => {
+        const { presentationData, audioUrls, style, voice, savedPresentations, activePresentationId } =
+          get()
+        if (!presentationData) return null
+
+        // Check if we're updating an existing draft
+        const existingDraft = activePresentationId
+          ? savedPresentations.find((p) => p.id === activePresentationId)
+          : null
+
+        if (existingDraft) {
+          // Update existing draft
+          const updatedPresentations = savedPresentations.map((p) =>
+            p.id === activePresentationId
+              ? {
+                  ...p,
+                  savedAt: Date.now(),
+                  presentationData,
+                  audioUrls,
+                  style,
+                  voice,
+                }
+              : p
+          )
+          set({ savedPresentations: updatedPresentations })
+          return activePresentationId
+        }
+
+        // Create new draft
+        const draftId = `draft_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+        const draftName = presentationData.metadata.title || 'Untitled Draft'
+        const newDraft: SavedPresentation = {
+          id: draftId,
+          name: draftName,
+          savedAt: Date.now(),
+          presentationData,
+          audioUrls,
+          style,
+          voice,
+          isDraft: true,
+        }
+
+        set({
+          savedPresentations: [...savedPresentations, newDraft],
+          activePresentationId: draftId,
+        })
+        return draftId
+      },
+
+      clearActiveSession: () => {
+        set({
+          activePresentationId: null,
+          presentationData: null,
+          audioUrls: {},
+          currentSlide: 0,
+          lastGeneratedContentHash: null,
+        })
+      },
+
+      tryRecoverSession: () => {
+        const { activePresentationId, savedPresentations, presentationData, getContentHash } = get()
+
+        // Already have data in memory, no recovery needed
+        if (presentationData) return true
+
+        // No active session to recover
+        if (!activePresentationId) return false
+
+        // Try to find the presentation
+        const presentation = savedPresentations.find((p) => p.id === activePresentationId)
+        if (!presentation) {
+          // Active ID exists but presentation was deleted - clean up
+          set({ activePresentationId: null })
+          return false
+        }
+
+        // Recover the session
+        set({
+          presentationData: presentation.presentationData,
+          audioUrls: presentation.audioUrls,
+          style: presentation.style,
+          voice: presentation.voice,
+          currentSlide: 0,
+        })
+
+        // Set content hash if audio exists
+        if (Object.keys(presentation.audioUrls).length > 0) {
+          const hash = getContentHash()
+          set({ lastGeneratedContentHash: hash })
+        }
+
+        return true
+      },
+
       // Saved presentations
       saveCurrentPresentation: (name: string) => {
-        const { presentationData, audioUrls, style, voice, savedPresentations } = get()
+        const { presentationData, audioUrls, style, voice, savedPresentations, activePresentationId } =
+          get()
         if (!presentationData) return
 
+        // Check if we're updating an existing presentation (draft or not)
+        const existingPresentation = activePresentationId
+          ? savedPresentations.find((p) => p.id === activePresentationId)
+          : null
+
+        if (existingPresentation) {
+          // Update existing presentation, convert draft to saved (remove isDraft flag)
+          const updatedPresentations = savedPresentations.map((p) =>
+            p.id === activePresentationId
+              ? {
+                  ...p,
+                  name,
+                  savedAt: Date.now(),
+                  presentationData,
+                  audioUrls,
+                  style,
+                  voice,
+                  isDraft: undefined, // Clear draft flag - this is now explicitly saved
+                }
+              : p
+          )
+          set({ savedPresentations: updatedPresentations })
+          return
+        }
+
+        // Create new presentation
+        const newId = `pres_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
         const newPresentation: SavedPresentation = {
-          id: `pres_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+          id: newId,
           name,
           savedAt: Date.now(),
           presentationData,
@@ -260,6 +394,7 @@ export const useNarratorStore = create<NarratorStore>()(
 
         set({
           savedPresentations: [...savedPresentations, newPresentation],
+          activePresentationId: newId,
         })
       },
 
@@ -268,7 +403,7 @@ export const useNarratorStore = create<NarratorStore>()(
         const presentation = savedPresentations.find((p) => p.id === id)
         if (!presentation) return
 
-        // Set the presentation data first
+        // Set the presentation data and mark this as the active session
         set({
           presentationData: presentation.presentationData,
           audioUrls: presentation.audioUrls,
@@ -276,6 +411,7 @@ export const useNarratorStore = create<NarratorStore>()(
           voice: presentation.voice,
           appState: 'preview',
           currentSlide: 0,
+          activePresentationId: id,
         })
 
         // Calculate and set the content hash if audio exists
@@ -286,18 +422,24 @@ export const useNarratorStore = create<NarratorStore>()(
       },
 
       deletePresentation: (id: string) => {
-        const { savedPresentations } = get()
-        set({
+        const { savedPresentations, activePresentationId } = get()
+        const updates: Partial<NarratorStore> = {
           savedPresentations: savedPresentations.filter((p) => p.id !== id),
-        })
+        }
+        // Clear active session if we're deleting the active presentation
+        if (activePresentationId === id) {
+          updates.activePresentationId = null
+        }
+        set(updates as NarratorStore)
       },
 
       importPresentation: (data: NarratorExportFile, mode: 'view' | 'edit') => {
         const { savedPresentations, getContentHash } = get()
 
         // Create a new saved presentation from the import data
+        const newId = `pres_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
         const newPresentation: SavedPresentation = {
-          id: `pres_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+          id: newId,
           name: data.name,
           savedAt: Date.now(),
           presentationData: data.presentationData,
@@ -306,7 +448,7 @@ export const useNarratorStore = create<NarratorStore>()(
           voice: data.voice,
         }
 
-        // Save to library and set as current
+        // Save to library, set as current, and mark as active session
         set({
           savedPresentations: [...savedPresentations, newPresentation],
           presentationData: data.presentationData,
@@ -315,6 +457,7 @@ export const useNarratorStore = create<NarratorStore>()(
           voice: data.voice,
           currentSlide: 0,
           appState: mode === 'view' ? 'viewer' : 'preview',
+          activePresentationId: newId,
         })
 
         // Calculate and set the content hash if audio exists
@@ -345,10 +488,36 @@ export const useNarratorStore = create<NarratorStore>()(
       storage: indexedDBStorage,
       partialize: (state) => ({
         savedPresentations: state.savedPresentations,
+        activePresentationId: state.activePresentationId,
       }),
+      onRehydrateStorage: () => {
+        return () => {
+          // Called when rehydration is complete
+          useNarratorStore.persist.hasHydrated = () => true
+        }
+      },
     }
   )
 )
+
+/**
+ * Wait for the store to be rehydrated from IndexedDB.
+ * Returns a promise that resolves when hydration is complete.
+ */
+export async function waitForHydration(): Promise<void> {
+  // If already hydrated, return immediately
+  if (useNarratorStore.persist.hasHydrated()) {
+    return
+  }
+
+  // Wait for hydration to complete
+  return new Promise((resolve) => {
+    const unsubscribe = useNarratorStore.persist.onFinishHydration(() => {
+      unsubscribe()
+      resolve()
+    })
+  })
+}
 
 // Run migration from localStorage on app start (browser only)
 if (typeof window !== 'undefined') {

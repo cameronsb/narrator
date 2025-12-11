@@ -4,6 +4,7 @@ const DB_NAME = 'narrator-db'
 const DB_VERSION = 1
 const STORE_NAME = 'presentations'
 const MIGRATION_KEY = 'narrator-storage-migrated'
+const ACTIVE_SESSION_KEY = 'narrator-active-session'
 
 let dbInstance: IDBDatabase | null = null
 let dbPromise: Promise<IDBDatabase> | null = null
@@ -163,7 +164,10 @@ export async function migrateFromLocalStorage(): Promise<void> {
 }
 
 interface PersistedState {
-  state: { savedPresentations: SavedPresentation[] }
+  state: {
+    savedPresentations: SavedPresentation[]
+    activePresentationId?: string | null
+  }
   version?: number
 }
 
@@ -175,7 +179,15 @@ export const indexedDBStorage = {
   getItem: async (_name: string): Promise<PersistedState | null> => {
     try {
       const presentations = await getAllPresentations()
-      return { state: { savedPresentations: presentations }, version: 0 }
+      // Read activePresentationId from localStorage (small value, fast sync access)
+      const activePresentationId = localStorage.getItem(ACTIVE_SESSION_KEY) || null
+      return {
+        state: {
+          savedPresentations: presentations,
+          activePresentationId,
+        },
+        version: 0,
+      }
     } catch {
       return null
     }
@@ -207,6 +219,14 @@ export const indexedDBStorage = {
       for (const p of toSave) {
         await savePresentation(p)
       }
+
+      // Persist activePresentationId to localStorage
+      const activePresentationId = value?.state?.activePresentationId
+      if (activePresentationId) {
+        localStorage.setItem(ACTIVE_SESSION_KEY, activePresentationId)
+      } else {
+        localStorage.removeItem(ACTIVE_SESSION_KEY)
+      }
     } catch (error) {
       console.error('Failed to persist to IndexedDB:', error)
     }
@@ -214,5 +234,6 @@ export const indexedDBStorage = {
 
   removeItem: async (_name: string): Promise<void> => {
     await clearAllPresentations()
+    localStorage.removeItem(ACTIVE_SESSION_KEY)
   },
 }

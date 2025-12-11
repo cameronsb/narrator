@@ -74,12 +74,17 @@ export function GenerateButton() {
   const setPresentationData = useNarratorStore((s) => s.setPresentationData)
   const setAppState = useNarratorStore((s) => s.setAppState)
   const setDemoMode = useNarratorStore((s) => s.setDemoMode)
+  const saveAsDraft = useNarratorStore((s) => s.saveAsDraft)
+  const clearActiveSession = useNarratorStore((s) => s.clearActiveSession)
 
   const handleGenerate = async () => {
     if (!content.trim()) {
       toast.error('Please enter some text first')
       return
     }
+
+    // Clear any existing active session before starting fresh generation
+    clearActiveSession()
 
     setLoading(
       true,
@@ -105,6 +110,10 @@ export function GenerateButton() {
       setPresentationData(data)
       setDemoMode(false)
       setLoading(false)
+
+      // Auto-save as draft to enable session recovery on refresh
+      saveAsDraft()
+
       setAppState('preview')
       toast.success('Slides generated successfully!')
     } catch (error) {
@@ -115,6 +124,10 @@ export function GenerateButton() {
       setPresentationData(mockData)
       setDemoMode(true)
       setLoading(false)
+
+      // Auto-save as draft even for demo mode
+      saveAsDraft()
+
       setAppState('preview')
       toast.info('Using local generation (API unavailable)')
     }
