@@ -16,7 +16,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   playback: {
     volume: 0.5, // Softer default (exponential scaling: 0.5^2 = 0.25 actual)
     speed: 1.2,
-    autoAdvance: true,
+    autoAdvance: false, // Default to manual control; less surprising for first-time users
   },
   defaults: {
     voice: 'nova',

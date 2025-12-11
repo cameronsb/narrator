@@ -66,11 +66,11 @@ export function ImportDialog({ open, onOpenChange, data }: ImportDialogProps) {
         <DialogFooter className="gap-2 sm:gap-2">
           <Button variant="outline" onClick={() => handleImport('edit')}>
             <Pencil className="mr-1.5 h-4 w-4" />
-            Edit First
+            Open for Editing
           </Button>
           <Button onClick={() => handleImport('view')}>
             <Play className="mr-1.5 h-4 w-4" />
-            View Presentation
+            Present Now
           </Button>
         </DialogFooter>
       </DialogContent>

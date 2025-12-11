@@ -6,10 +6,12 @@ import { Play } from 'lucide-react'
 import { useNarratorStore } from '@/lib/store'
 import { useAudio } from '@/lib/audio'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useReducedMotion } from '@/lib/hooks/use-reduced-motion'
 
 export function ViewerIntro() {
   const [visible, setVisible] = useState(true)
   const presentationData = useNarratorStore((s) => s.presentationData)
+  const prefersReducedMotion = useReducedMotion()
 
   const { play } = useAudio()
 
@@ -35,20 +37,25 @@ export function ViewerIntro() {
 
   if (!presentationData) return null
 
+  // Animation config respecting reduced motion preference
+  const exitTransition = prefersReducedMotion ? { duration: 0 } : { duration: 0.5 }
+  const staggerTransition = (delay: number) =>
+    prefersReducedMotion ? { duration: 0 } : { delay, duration: 0.3 }
+
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={exitTransition}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/97"
         >
           <div className="max-w-2xl px-8 text-center text-white">
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={staggerTransition(0.2)}
               className="mb-6 text-4xl font-bold sm:text-5xl"
             >
               {presentationData.metadata.title}
@@ -56,9 +63,9 @@ export function ViewerIntro() {
 
             {presentationData.metadata.subtitle && (
               <motion.p
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={staggerTransition(0.3)}
                 className="mb-10 text-xl text-white/80"
               >
                 {presentationData.metadata.subtitle}
@@ -66,9 +73,9 @@ export function ViewerIntro() {
             )}
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={staggerTransition(0.4)}
             >
               <Button
                 size="lg"
@@ -83,7 +90,7 @@ export function ViewerIntro() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              transition={staggerTransition(0.6)}
               className="mt-12 space-y-2 text-sm text-white/60"
             >
               <p>Audio narration will play automatically</p>
