@@ -25,7 +25,7 @@ export function SlideDisplay() {
   // Animation config respecting reduced motion preference
   const slideTransition = prefersReducedMotion
     ? { duration: 0 }
-    : { duration: 0.4, ease: 'easeOut' }
+    : { duration: 0.4, ease: 'easeOut' as const }
 
   const pointTransition = (index: number) =>
     prefersReducedMotion

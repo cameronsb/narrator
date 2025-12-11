@@ -8,9 +8,17 @@ import { createExportFile, downloadFile, sanitizeFilename } from '@/lib/export-i
 
 interface ExportButtonProps {
   presentation: SavedPresentation
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+  iconOnly?: boolean
 }
 
-export function ExportButton({ presentation }: ExportButtonProps) {
+export function ExportButton({
+  presentation,
+  variant = 'outline',
+  size = 'sm',
+  iconOnly = true,
+}: ExportButtonProps) {
   const handleExport = () => {
     try {
       const exportData = createExportFile(presentation)
@@ -23,9 +31,15 @@ export function ExportButton({ presentation }: ExportButtonProps) {
   }
 
   return (
-    <Button size="sm" variant="outline" onClick={handleExport} title="Export presentation">
-      <Download className="h-4 w-4" />
-      <span className="sr-only">Export</span>
+    <Button
+      size={size}
+      variant={variant}
+      onClick={handleExport}
+      title="Export presentation"
+      className={size === 'icon' ? 'h-8 w-8' : undefined}
+    >
+      <Download className={iconOnly ? 'h-4 w-4' : 'mr-2 h-4 w-4'} />
+      {iconOnly ? <span className="sr-only">Export</span> : 'Export'}
     </Button>
   )
 }
