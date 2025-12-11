@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { useNarratorStore, waitForHydration } from '@/lib/store'
+import { useNarratorStore, onHydrated } from '@/lib/store'
 import { InputState } from '@/components/states/input-state'
 import { PreviewState } from '@/components/states/preview-state'
 import { ViewerState } from '@/components/states/viewer-state'
@@ -63,9 +63,15 @@ export default function Home() {
   const defaultTab: TabId = savedPresentations.length > 0 ? 'library' : 'create'
   const [activeTab, setActiveTab] = useState<TabId>(defaultTab)
 
+  // Track whether we've completed hydration (prevents flash of wrong content)
+  // Start false to hide content until we know what to show
+  const [isHydrated, setIsHydrated] = useState(false)
+
   // Refs to track initialization and prevent loops
   const hasInitialized = useRef(false)
+  const hasCompletedInitialSync = useRef(false)
   const lastRoute = useRef<Route | null>(null)
+  const syncFromUrlRef = useRef<((isInitial?: boolean) => void) | null>(null)
 
   // Sync URL → state on mount and popstate
   const syncFromUrl = useCallback(
@@ -133,16 +139,23 @@ export default function Home() {
     [defaultTab, setAppState, tryRecoverSession, savedPresentations.length]
   )
 
+  // Keep ref updated with latest syncFromUrl to avoid stale closures
+  syncFromUrlRef.current = syncFromUrl
+
   // Initial mount: wait for store hydration, then sync from URL
   useEffect(() => {
     if (hasInitialized.current) return
     hasInitialized.current = true
 
-    // Wait for IndexedDB data to be loaded before checking routes
-    waitForHydration().then(() => {
-      syncFromUrl(true)
+    // Subscribe to hydration completion - use ref to get latest syncFromUrl
+    const unsubscribe = onHydrated(() => {
+      syncFromUrlRef.current?.(true)
+      hasCompletedInitialSync.current = true
+      setIsHydrated(true)
     })
-  }, [syncFromUrl])
+
+    return unsubscribe
+  }, []) // Empty deps - only run once on mount
 
   // Browser back/forward navigation
   useEffect(() => {
@@ -163,6 +176,10 @@ export default function Home() {
   // Handle navigation to preview/present from child components
   // This effect syncs appState changes that originate from the store (e.g., loadPresentation)
   useEffect(() => {
+    // Don't sync state → URL until initial URL → state sync is complete
+    // This prevents the effect from redirecting before hydration finishes
+    if (!hasCompletedInitialSync.current) return
+
     // Determine what route the current appState should have
     let expectedRoute: Route
     if (appState === 'input') {
@@ -185,11 +202,17 @@ export default function Home() {
       <LoadingOverlay />
       <DemoModeBanner />
 
-      {appState === 'input' && (
-        <InputState activeTab={activeTab} onTabChange={handleTabChange} />
-      )}
-      {appState === 'preview' && <PreviewState />}
-      {appState === 'viewer' && <ViewerState />}
+      {/* Fade in after hydration to prevent flash of wrong content */}
+      <div
+        className="transition-opacity duration-150"
+        style={{ opacity: isHydrated ? 1 : 0 }}
+      >
+        {appState === 'input' && (
+          <InputState activeTab={activeTab} onTabChange={handleTabChange} />
+        )}
+        {appState === 'preview' && <PreviewState />}
+        {appState === 'viewer' && <ViewerState />}
+      </div>
     </>
   )
 }

@@ -490,33 +490,22 @@ export const useNarratorStore = create<NarratorStore>()(
         savedPresentations: state.savedPresentations,
         activePresentationId: state.activePresentationId,
       }),
-      onRehydrateStorage: () => {
-        return () => {
-          // Called when rehydration is complete
-          useNarratorStore.persist.hasHydrated = () => true
-        }
-      },
     }
   )
 )
 
 /**
- * Wait for the store to be rehydrated from IndexedDB.
- * Returns a promise that resolves when hydration is complete.
+ * Subscribe to hydration completion. Calls the callback when hydration is done.
+ * If already hydrated, calls the callback immediately.
+ * Returns an unsubscribe function.
  */
-export async function waitForHydration(): Promise<void> {
-  // If already hydrated, return immediately
+export function onHydrated(callback: () => void): () => void {
   if (useNarratorStore.persist.hasHydrated()) {
-    return
+    callback()
+    return () => {} // No-op unsubscribe
   }
 
-  // Wait for hydration to complete
-  return new Promise((resolve) => {
-    const unsubscribe = useNarratorStore.persist.onFinishHydration(() => {
-      unsubscribe()
-      resolve()
-    })
-  })
+  return useNarratorStore.persist.onFinishHydration(callback)
 }
 
 // Run migration from localStorage on app start (browser only)
