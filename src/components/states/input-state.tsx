@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   StyleSelector,
@@ -14,23 +14,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { NarratorExportFile } from '@/lib/types'
 import { useNarratorStore } from '@/lib/store'
 import { useReducedMotion } from '@/lib/hooks/use-reduced-motion'
-import {
-  useHashRouting,
-  routeToTab,
-  tabToRoute,
-  type HashRoute,
-} from '@/lib/hooks/use-hash-routing'
 
-export function InputState() {
+interface InputStateProps {
+  activeTab: TabId
+  onTabChange: (tab: TabId) => void
+}
+
+export function InputState({ activeTab, onTabChange }: InputStateProps) {
   const savedPresentations = useNarratorStore((s) => s.savedPresentations)
   const prefersReducedMotion = useReducedMotion()
-
-  // Hash routing for tabs
-  const defaultRoute: HashRoute = savedPresentations.length > 0 ? 'library' : 'create'
-  const { route, setRoute } = useHashRouting({ defaultRoute })
-
-  // Derive active tab from route
-  const activeTab: TabId = routeToTab(route) ?? 'create'
 
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [pendingImport, setPendingImport] = useState<NarratorExportFile | null>(null)
@@ -45,10 +37,6 @@ export function InputState() {
     if (!open) {
       setPendingImport(null)
     }
-  }
-
-  const handleTabChange = (tab: TabId) => {
-    setRoute(tabToRoute(tab))
   }
 
   // Animation config respecting reduced motion preference
@@ -75,7 +63,7 @@ export function InputState() {
         {/* Tabs */}
         <HomeTabs
           activeTab={activeTab}
-          onTabChange={handleTabChange}
+          onTabChange={onTabChange}
           libraryCount={savedPresentations.length}
         />
 
@@ -114,7 +102,7 @@ export function InputState() {
               </Card>
             )}
 
-            {activeTab === 'library' && <LibraryTab onSwitchTab={handleTabChange} />}
+            {activeTab === 'library' && <LibraryTab onSwitchTab={onTabChange} />}
 
             {activeTab === 'import' && <ImportTab onImport={handleImport} />}
           </motion.div>
