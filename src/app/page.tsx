@@ -1,59 +1,96 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useNarratorStore } from '@/lib/store'
 import { InputState } from '@/components/states/input-state'
 import { PreviewState } from '@/components/states/preview-state'
 import { ViewerState } from '@/components/states/viewer-state'
 import { LoadingOverlay } from '@/components/loading-overlay'
 import { DemoModeBanner } from '@/components/demo-mode-banner'
-import {
-  useHashRouting,
-  routeToAppState,
-  appStateToRoute,
-  type HashRoute,
-} from '@/lib/hooks/use-hash-routing'
+import { routeToAppState, appStateToRoute, type HashRoute } from '@/lib/hooks/use-hash-routing'
 
 export default function Home() {
   const appState = useNarratorStore((s) => s.appState)
   const setAppState = useNarratorStore((s) => s.setAppState)
   const savedPresentations = useNarratorStore((s) => s.savedPresentations)
 
-  // Determine default route based on whether user has saved presentations
-  const defaultRoute: HashRoute = savedPresentations.length > 0 ? 'library' : 'create'
-  const { route, setRoute } = useHashRouting({ defaultRoute })
+  // Track if the last navigation was from URL (browser back/forward)
+  const isFromUrl = useRef(false)
+  const prevAppState = useRef(appState)
 
-  // Track if we're syncing to avoid loops
-  const isSyncing = useRef(false)
+  // Get default route based on saved presentations
+  const getDefaultRoute = useCallback((): HashRoute => {
+    return savedPresentations.length > 0 ? 'library' : 'create'
+  }, [savedPresentations.length])
 
-  // Sync route -> appState (when URL changes via back/forward)
-  useEffect(() => {
-    if (isSyncing.current) return
+  // Parse current URL hash
+  const parseHash = useCallback((): HashRoute => {
+    if (typeof window === 'undefined') return ''
+    const hash = window.location.hash
+    const route = hash.replace(/^#\/?/, '').toLowerCase()
+    const validRoutes: HashRoute[] = ['', 'create', 'library', 'import', 'preview', 'present']
+    return validRoutes.includes(route as HashRoute) ? (route as HashRoute) : ''
+  }, [])
 
-    const targetAppState = routeToAppState(route)
-    if (targetAppState && targetAppState !== appState) {
-      isSyncing.current = true
-      setAppState(targetAppState)
-      // Reset sync flag after state update
-      requestAnimationFrame(() => {
-        isSyncing.current = false
-      })
+  // Update URL hash
+  const updateHash = useCallback((route: HashRoute, replace = false) => {
+    const hash = route === '' || route === 'create' ? '#/' : `#/${route}`
+    const currentHash = window.location.hash || '#/'
+    if (hash !== currentHash) {
+      if (replace) {
+        window.history.replaceState(null, '', hash)
+      } else {
+        window.history.pushState(null, '', hash)
+      }
     }
-  }, [route, appState, setAppState])
+  }, [])
 
-  // Sync appState -> route (when app navigates programmatically)
+  // Handle browser back/forward navigation
   useEffect(() => {
-    if (isSyncing.current) return
+    const handlePopState = () => {
+      isFromUrl.current = true
+      const route = parseHash()
+      const targetAppState = routeToAppState(route)
+      if (targetAppState) {
+        setAppState(targetAppState)
+      }
+    }
 
+    // Set initial URL on mount if no hash
+    if (typeof window !== 'undefined') {
+      const initialRoute = parseHash()
+      if (!initialRoute) {
+        updateHash(getDefaultRoute(), true)
+      } else {
+        // Sync initial URL to appState
+        const targetAppState = routeToAppState(initialRoute)
+        if (targetAppState && targetAppState !== appState) {
+          setAppState(targetAppState)
+        }
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [parseHash, updateHash, getDefaultRoute, setAppState, appState])
+
+  // Update URL when appState changes (from programmatic navigation)
+  useEffect(() => {
+    // Skip if this change came from URL navigation
+    if (isFromUrl.current) {
+      isFromUrl.current = false
+      prevAppState.current = appState
+      return
+    }
+
+    // Only update URL for preview/viewer states (input state uses tabs with their own routing)
     const targetRoute = appStateToRoute(appState)
-    if (targetRoute && targetRoute !== route) {
-      isSyncing.current = true
-      setRoute(targetRoute)
-      requestAnimationFrame(() => {
-        isSyncing.current = false
-      })
+    if (targetRoute) {
+      updateHash(targetRoute)
     }
-  }, [appState, route, setRoute])
+
+    prevAppState.current = appState
+  }, [appState, updateHash])
 
   return (
     <>

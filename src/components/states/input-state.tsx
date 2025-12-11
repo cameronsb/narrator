@@ -66,8 +66,8 @@ export function InputState() {
       >
         {/* Header */}
         <div className="space-y-2 text-center">
-          <h1 className="text-brand-600 text-4xl font-bold sm:text-5xl">Narrator</h1>
-          <p className="text-muted-foreground text-lg">
+          <h1 className="text-4xl font-bold text-white sm:text-5xl">Narrator</h1>
+          <p className="text-lg text-white/80">
             Transform any text into an AI-narrated presentation
           </p>
         </div>
