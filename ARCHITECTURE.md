@@ -24,6 +24,8 @@ A demo application that transforms text into AI-narrated slideshow presentations
 | Styling       | Tailwind CSS v4                     | Rapid prototyping, consistent design            |
 | UI Components | Radix UI + shadcn/ui                | Accessible, unstyled primitives                 |
 | Animation     | Framer Motion                       | Declarative animations                          |
+| Drag & Drop   | @dnd-kit                            | Accessible, performant sortable lists           |
+| Testing       | Vitest + React Testing Library      | Fast, modern test runner with React integration |
 | AI (Slides)   | Claude Sonnet 4.5 / GPT-4o fallback | Structured JSON generation                      |
 | AI (Audio)    | OpenAI TTS (`tts-1`)                | Only major TTS API with quality voices          |
 
@@ -129,6 +131,120 @@ SavedPresentation {
 ```
 
 **Storage Key:** `narrator-storage`
+
+## Slide Editing System
+
+The preview state provides full CRUD operations for slides and bullet points, with drag-and-drop reordering.
+
+### Store Actions
+
+```typescript
+// Slide operations
+addSlide(afterIndex: number)      // Insert new slide after index (-1 for beginning)
+removeSlide(index: number)        // Remove slide (minimum 1 slide enforced)
+reorderSlides(from: number, to: number)  // Drag-and-drop reorder
+
+// Bullet operations
+addBullet(slideIndex: number)     // Add bullet to slide
+removeBullet(slideIndex, bulletIndex)  // Remove bullet (minimum 1 enforced)
+```
+
+### Drag-and-Drop Implementation
+
+Uses `@dnd-kit` with the following setup:
+
+```typescript
+// Sensors for pointer and keyboard interaction
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: { distance: 8 }  // Prevents accidental drags
+  }),
+  useSensor(KeyboardSensor, {
+    coordinateGetter: sortableKeyboardCoordinates
+  })
+)
+```
+
+**Key decisions:**
+
+- Title slide is not draggable (always first)
+- Content slides use `SortableContext` with `verticalListSortingStrategy`
+- Drag handle integrated into card header for better UX
+- Visual feedback during drag (ring highlight, elevated shadow)
+
+### Edit Constraints
+
+| Operation     | Constraint                                    |
+| ------------- | --------------------------------------------- |
+| Remove slide  | At least 1 content slide must remain          |
+| Remove bullet | At least 1 bullet per slide must remain       |
+| Add slide     | No limit (practical limit ~20 for UX)         |
+| Add bullet    | No limit (practical limit ~10 for readability)|
+
+## Design System
+
+### Color Palette
+
+Uses OKLCH color space for perceptually uniform colors. The palette uses warm amber/stone tones (hue 32-75) for a sophisticated, professional look.
+
+```css
+/* Brand scale - shifts from golden to reddish-orange */
+--brand-50:  oklch(0.98 0.015 75);   /* Lightest - cream */
+--brand-100: oklch(0.94 0.03 65);
+--brand-200: oklch(0.88 0.06 55);
+--brand-300: oklch(0.79 0.09 50);
+--brand-400: oklch(0.70 0.12 45);
+--brand-500: oklch(0.58 0.13 42);    /* Primary */
+--brand-600: oklch(0.50 0.12 40);    /* Surface background */
+--brand-700: oklch(0.42 0.10 38);
+--brand-800: oklch(0.35 0.08 36);
+--brand-900: oklch(0.28 0.06 34);
+--brand-950: oklch(0.22 0.04 32);    /* Darkest */
+```
+
+**Design rationale:**
+
+- Warm tones feel professional without the "AI template" aesthetic of purple/indigo
+- Reduced chroma (0.015-0.13) for subtlety
+- Hue shifts from 75° (golden) to 32° (amber) as colors darken, creating depth
+
+## Testing
+
+### Setup
+
+- **Test Runner:** Vitest with jsdom environment
+- **Component Testing:** React Testing Library + user-event
+- **Assertions:** @testing-library/jest-dom matchers
+
+### Test Structure
+
+```
+src/
+├── lib/
+│   └── store.test.ts           # 40 tests - all store actions
+├── components/
+│   └── preview-state/
+│       └── slide-card.test.tsx # 24 tests - component behavior
+└── test/
+    └── setup.ts                # Global test setup
+```
+
+### Running Tests
+
+```bash
+npm run test        # Watch mode
+npm run test:run    # Single run
+npm run test:coverage  # Coverage report
+```
+
+### Test Coverage Focus
+
+| Area            | Coverage | Notes                                    |
+| --------------- | -------- | ---------------------------------------- |
+| Store actions   | High     | All CRUD operations, edge cases          |
+| SlideCard       | High     | Editing, bullet ops, drag props          |
+| API routes      | Low      | Requires mocking external APIs           |
+| Viewer state    | Medium   | Audio player tested via store            |
 
 ## Design Tradeoffs
 
@@ -241,6 +357,7 @@ src/
 │   ├── api/
 │   │   ├── generate-slides/route.ts  # Claude/GPT-4o integration
 │   │   └── generate-audio/route.ts   # OpenAI TTS integration
+│   ├── globals.css                   # Tailwind + design tokens
 │   ├── page.tsx                      # Main app entry
 │   └── layout.tsx                    # Root layout
 ├── components/
@@ -250,10 +367,16 @@ src/
 │   │   └── viewer-state.tsx
 │   ├── input-state/                  # Input screen components
 │   ├── preview-state/                # Preview screen components
+│   │   ├── slide-card.tsx            # Editable slide with drag handle
+│   │   ├── slide-card.test.tsx       # Component tests
+│   │   ├── slide-editor.tsx          # Sortable slide list
+│   │   ├── voice-selector.tsx
+│   │   └── preview-header.tsx
 │   ├── viewer-state/                 # Viewer screen components
 │   └── ui/                           # shadcn/ui components
 ├── lib/
-│   ├── store.ts                      # Zustand store
+│   ├── store.ts                      # Zustand store (incl. CRUD ops)
+│   ├── store.test.ts                 # Store unit tests
 │   ├── settings.ts                   # Settings types & defaults
 │   ├── types.ts                      # TypeScript types
 │   ├── hooks/
@@ -262,15 +385,20 @@ src/
 │   │   ├── use-local-storage.ts      # localStorage hook
 │   │   └── use-keyboard-navigation.ts
 │   └── utils.ts                      # Utility functions
+├── test/
+│   └── setup.ts                      # Test setup (mocks, globals)
+vitest.config.ts                      # Vitest configuration
 ```
 
 ## Potential Improvements
 
 1. **IndexedDB storage** - Handle larger presentations
 2. **Export to video** - Use canvas recording + audio merge
-3. **Custom themes** - Color schemes, fonts
+3. **Undo/redo** - History stack for slide edits
 4. **Slide templates** - Different visual layouts
 5. **Real-time collaboration** - WebSocket + CRDT
 6. **Image generation** - Add DALL-E/Midjourney visuals
 7. **Presentation sharing** - Generate shareable links
 8. **Offline mode** - Service worker + cached generation
+9. **Voice preview** - Pre-generated MP3 samples for each TTS voice
+10. **Error boundaries** - React error boundaries for graceful failures

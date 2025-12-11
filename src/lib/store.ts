@@ -31,6 +31,15 @@ interface NarratorStore {
   updateSlide: (index: number, slide: Partial<PresentationData['slides'][0]>) => void
   updateMetadata: (metadata: Partial<PresentationData['metadata']>) => void
 
+  // Slide CRUD operations
+  addSlide: (afterIndex: number) => void
+  removeSlide: (index: number) => void
+  reorderSlides: (fromIndex: number, toIndex: number) => void
+
+  // Bullet CRUD operations
+  addBullet: (slideIndex: number) => void
+  removeBullet: (slideIndex: number, bulletIndex: number) => void
+
   // Viewer state (session-specific)
   currentSlide: number
   setCurrentSlide: (slide: number) => void
@@ -115,6 +124,71 @@ export const useNarratorStore = create<NarratorStore>()(
               ...state.presentationData,
               metadata: { ...state.presentationData.metadata, ...metadataUpdate },
             },
+          }
+        }),
+
+      // Slide CRUD operations
+      addSlide: (afterIndex) =>
+        set((state) => {
+          if (!state.presentationData) return state
+          const newSlide = {
+            title: 'New Slide',
+            points: ['Add your first point'],
+            script: 'Add your speaker notes here.',
+          }
+          const slides = [...state.presentationData.slides]
+          slides.splice(afterIndex + 1, 0, newSlide)
+          return {
+            presentationData: { ...state.presentationData, slides },
+          }
+        }),
+
+      removeSlide: (index) =>
+        set((state) => {
+          if (!state.presentationData) return state
+          if (state.presentationData.slides.length <= 1) return state // Keep at least one slide
+          const slides = state.presentationData.slides.filter((_, i) => i !== index)
+          return {
+            presentationData: { ...state.presentationData, slides },
+          }
+        }),
+
+      reorderSlides: (fromIndex, toIndex) =>
+        set((state) => {
+          if (!state.presentationData) return state
+          const slides = [...state.presentationData.slides]
+          const [removed] = slides.splice(fromIndex, 1)
+          slides.splice(toIndex, 0, removed)
+          return {
+            presentationData: { ...state.presentationData, slides },
+          }
+        }),
+
+      // Bullet CRUD operations
+      addBullet: (slideIndex) =>
+        set((state) => {
+          if (!state.presentationData) return state
+          const slides = [...state.presentationData.slides]
+          slides[slideIndex] = {
+            ...slides[slideIndex],
+            points: [...slides[slideIndex].points, 'New point'],
+          }
+          return {
+            presentationData: { ...state.presentationData, slides },
+          }
+        }),
+
+      removeBullet: (slideIndex, bulletIndex) =>
+        set((state) => {
+          if (!state.presentationData) return state
+          const slides = [...state.presentationData.slides]
+          if (slides[slideIndex].points.length <= 1) return state // Keep at least one bullet
+          slides[slideIndex] = {
+            ...slides[slideIndex],
+            points: slides[slideIndex].points.filter((_, i) => i !== bulletIndex),
+          }
+          return {
+            presentationData: { ...state.presentationData, slides },
           }
         }),
 

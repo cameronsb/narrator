@@ -66,18 +66,20 @@
 :root {
   --radius: 0.625rem;
 
-  /* Brand color scale - Indigo/Purple */
-  --brand-50: oklch(0.97 0.02 275);
-  --brand-100: oklch(0.93 0.04 275);
-  --brand-200: oklch(0.87 0.08 275);
-  --brand-300: oklch(0.78 0.12 275);
-  --brand-400: oklch(0.68 0.16 275);
-  --brand-500: oklch(0.55 0.2 275);
-  --brand-600: oklch(0.48 0.2 275);
-  --brand-700: oklch(0.4 0.18 275);
-  --brand-800: oklch(0.33 0.15 275);
-  --brand-900: oklch(0.27 0.12 275);
-  --brand-950: oklch(0.2 0.1 275);
+  /* Brand color scale - Warm Amber/Stone
+     Hue 45 gives a sophisticated warm tone without feeling generic.
+     Slightly reduced chroma for a more muted, professional feel. */
+  --brand-50: oklch(0.98 0.015 75);
+  --brand-100: oklch(0.94 0.03 65);
+  --brand-200: oklch(0.88 0.06 55);
+  --brand-300: oklch(0.79 0.09 50);
+  --brand-400: oklch(0.70 0.12 45);
+  --brand-500: oklch(0.58 0.13 42);
+  --brand-600: oklch(0.50 0.12 40);
+  --brand-700: oklch(0.42 0.10 38);
+  --brand-800: oklch(0.35 0.08 36);
+  --brand-900: oklch(0.28 0.06 34);
+  --brand-950: oklch(0.22 0.04 32);
 
   /* Surface colors */
   --surface: var(--brand-600);
