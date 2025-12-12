@@ -20,6 +20,9 @@
 # production
 /build
 
+# meta
+/meta
+
 # misc
 .DS_Store
 *.pem

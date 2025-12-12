@@ -2,8 +2,7 @@
 
 import { useRef, useState, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Upload, Download } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { parseImportFile } from '@/lib/export-import'
 import type { NarratorExportFile } from '@/lib/types'
@@ -66,15 +65,14 @@ export function ImportTab({ onImport }: ImportTabProps) {
 
   return (
     <Card className="border-0 shadow-2xl">
-      <CardContent className="flex flex-col items-center px-8 py-12 text-center">
+      <CardContent className="p-6 sm:p-8">
         {/* Header */}
-        <div className="bg-muted mb-6 flex h-16 w-16 items-center justify-center rounded-full">
-          <Download className="text-muted-foreground h-8 w-8" />
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold">Import Presentation</h2>
+          <p className="text-muted-foreground text-sm">
+            Open a .narrator file shared with you
+          </p>
         </div>
-        <h2 className="mb-2 text-xl font-semibold">Import Presentation</h2>
-        <p className="text-muted-foreground mb-8 max-w-sm">
-          Open a .narrator file shared with you
-        </p>
 
         {/* Drop zone */}
         <div
@@ -83,33 +81,27 @@ export function ImportTab({ onImport }: ImportTabProps) {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            'flex w-full max-w-md cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-10 transition-all',
+            'flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 transition-all',
             isDragging
-              ? 'border-primary bg-primary/5 scale-[1.02]'
+              ? 'border-primary bg-primary/5 scale-[1.01]'
               : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30'
           )}
         >
           <div
             className={cn(
-              'flex h-12 w-12 items-center justify-center rounded-full transition-colors',
+              'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
               isDragging ? 'bg-primary/10' : 'bg-muted'
             )}
           >
             <Upload
-              className={cn('h-6 w-6', isDragging ? 'text-primary' : 'text-muted-foreground')}
+              className={cn('h-5 w-5', isDragging ? 'text-primary' : 'text-muted-foreground')}
             />
           </div>
-          <div>
-            <p className="font-medium">Drop file here</p>
+          <div className="text-center">
+            <p className="font-medium">Drop .narrator file here</p>
             <p className="text-muted-foreground text-sm">or click to browse</p>
           </div>
-          <Button variant="outline" size="sm" className="mt-2">
-            Browse Files
-          </Button>
         </div>
-
-        {/* File types hint */}
-        <p className="text-muted-foreground mt-6 text-xs">Accepts .narrator files</p>
 
         <input
           ref={fileInputRef}

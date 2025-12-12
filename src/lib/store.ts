@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { AppState, NarratorExportFile, PresentationData, Style, Voice } from './types'
-import { indexedDBStorage, migrateFromLocalStorage } from './indexed-db'
+import { indexedDBStorage } from './indexed-db'
 
 export interface SavedPresentation {
   id: string
@@ -506,9 +506,4 @@ export function onHydrated(callback: () => void): () => void {
   }
 
   return useNarratorStore.persist.onFinishHydration(callback)
-}
-
-// Run migration from localStorage on app start (browser only)
-if (typeof window !== 'undefined') {
-  migrateFromLocalStorage().catch(console.error)
 }

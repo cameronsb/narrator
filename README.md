@@ -13,24 +13,26 @@ Transform any text into AI-narrated presentations with natural voice synthesis.
 - **Natural Voice Synthesis** - OpenAI TTS with 6 voice options (Alloy, Nova, Shimmer, Echo, Onyx, Fable)
 - **Full Slide Editing** - Add, remove, and reorder slides with drag-and-drop
 - **Bullet Management** - Add and remove bullet points per slide
+- **Presentation Library** - Save presentations locally with IndexedDB persistence
+- **Import/Export** - Share presentations via `.narrator` file format
 - **Presentation Viewer** - Full-screen presentation with auto-advance and keyboard navigation
 - **Progressive Degradation** - Works in demo mode without API keys
 - **Accessible by Default** - Built on Radix UI primitives for WCAG compliance
-- **Fully Tested** - 64 unit tests covering store actions and components
+- **Fully Tested** - Comprehensive unit tests covering store actions and components
 
 ## Tech Stack
 
-| Layer      | Technology                   |
-| ---------- | ---------------------------- |
-| Framework  | Next.js 16 (App Router)      |
-| Language   | TypeScript 5                 |
-| Styling    | Tailwind CSS 4.0             |
-| Components | ShadCN/UI (Radix primitives) |
-| State      | Zustand                      |
-| Animations | Framer Motion                |
-| Drag & Drop| @dnd-kit                     |
-| Testing    | Vitest + React Testing Library |
-| AI         | Claude API, OpenAI API       |
+| Layer       | Technology                     |
+| ----------- | ------------------------------ |
+| Framework   | Next.js 16 (App Router)        |
+| Language    | TypeScript 5                   |
+| Styling     | Tailwind CSS 4.0               |
+| Components  | ShadCN/UI (Radix primitives)   |
+| State       | Zustand                        |
+| Animations  | Framer Motion                  |
+| Drag & Drop | @dnd-kit                       |
+| Testing     | Vitest + React Testing Library |
+| AI          | Claude API, OpenAI API         |
 
 ## Quick Start
 
@@ -63,21 +65,25 @@ src/
 │   └── page.tsx                # Main SPA entry
 ├── components/
 │   ├── ui/                     # ShadCN components
+│   ├── home-tabs/              # Library and import tabs
 │   ├── input-state/            # Content input, style selector
 │   ├── preview-state/          # Slide editor, voice selector
 │   ├── viewer-state/           # Presentation playback
+│   ├── export-import/          # .narrator file export/import
 │   └── states/                 # State wrapper components
 └── lib/
-    ├── types.ts                # TypeScript definitions
     ├── store.ts                # Zustand state management
+    ├── indexed-db.ts           # IndexedDB persistence layer
+    ├── types.ts                # TypeScript definitions
+    ├── audio/                  # Audio provider context
     └── hooks/                  # Custom React hooks
 ```
 
 ## Application States
 
 ```
-┌─────────────┐      Generate      ┌─────────────┐      Present      ┌─────────────┐
-│   INPUT     │ ───────────────▶  │   PREVIEW   │ ───────────────▶  │   VIEWER    │
+┌─────────────┐      Generate      ┌─────────────┐      Present       ┌─────────────┐
+│   INPUT     │ ───────────────▶   │   PREVIEW   │ ───────────────▶   │   VIEWER    │
 │             │                    │             │                    │             │
 │ • Content   │                    │ • Edit      │                    │ • Playback  │
 │ • Style     │                    │ • Voice     │                    │ • Navigate  │
@@ -110,6 +116,7 @@ npm run build
 ```
 
 Set environment variables in your hosting dashboard:
+
 - `ANTHROPIC_API_KEY` - For Claude slide generation
 - `OPENAI_API_KEY` - For TTS and fallback slide generation
 

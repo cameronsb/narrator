@@ -3,7 +3,6 @@
 import { useLocalStorage } from './use-local-storage'
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from '../settings'
 import type { UserSettings } from '../settings'
-import type { Style, Voice } from '../types'
 import { useEffect } from 'react'
 
 function mergeWithDefaults(stored: Partial<UserSettings>): UserSettings {
@@ -13,10 +12,6 @@ function mergeWithDefaults(stored: Partial<UserSettings>): UserSettings {
     playback: {
       ...DEFAULT_SETTINGS.playback,
       ...(stored.playback || {}),
-    },
-    defaults: {
-      ...DEFAULT_SETTINGS.defaults,
-      ...(stored.defaults || {}),
     },
   }
 }
@@ -72,27 +67,6 @@ export function useSettings() {
     }))
   }
 
-  // Default preferences
-  const setDefaultVoice = (voice: Voice) => {
-    setSettings((prev) => ({
-      ...prev,
-      defaults: {
-        ...prev.defaults,
-        voice,
-      },
-    }))
-  }
-
-  const setDefaultStyle = (style: Style) => {
-    setSettings((prev) => ({
-      ...prev,
-      defaults: {
-        ...prev.defaults,
-        style,
-      },
-    }))
-  }
-
   const resetSettings = () => {
     setSettings(DEFAULT_SETTINGS)
   }
@@ -100,14 +74,9 @@ export function useSettings() {
   return {
     settings,
     setSettings,
-    // Playback
     setVolume,
     setSpeed,
     setAutoAdvance,
-    // Defaults
-    setDefaultVoice,
-    setDefaultStyle,
-    // Reset
     resetSettings,
   }
 }

@@ -140,7 +140,9 @@ export default function Home() {
   )
 
   // Keep ref updated with latest syncFromUrl to avoid stale closures
-  syncFromUrlRef.current = syncFromUrl
+  useEffect(() => {
+    syncFromUrlRef.current = syncFromUrl
+  }, [syncFromUrl])
 
   // Initial mount: wait for store hydration, then sync from URL
   useEffect(() => {

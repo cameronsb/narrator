@@ -3,7 +3,6 @@ import type { SavedPresentation } from './store'
 const DB_NAME = 'narrator-db'
 const DB_VERSION = 1
 const STORE_NAME = 'presentations'
-const MIGRATION_KEY = 'narrator-storage-migrated'
 const ACTIVE_SESSION_KEY = 'narrator-active-session'
 
 let dbInstance: IDBDatabase | null = null
@@ -117,50 +116,6 @@ export async function clearAllPresentations(): Promise<void> {
       reject(request.error)
     }
   })
-}
-
-/**
- * Migrate data from localStorage to IndexedDB (one-time migration)
- */
-export async function migrateFromLocalStorage(): Promise<void> {
-  if (typeof window === 'undefined') return
-
-  // Check if already migrated
-  if (localStorage.getItem(MIGRATION_KEY)) return
-
-  try {
-    const oldData = localStorage.getItem('narrator-storage')
-    if (!oldData) {
-      localStorage.setItem(MIGRATION_KEY, 'true')
-      return
-    }
-
-    const parsed = JSON.parse(oldData)
-    const presentations: SavedPresentation[] = parsed?.state?.savedPresentations || []
-
-    if (presentations.length > 0) {
-      const db = await openDatabase()
-      const transaction = db.transaction(STORE_NAME, 'readwrite')
-      const store = transaction.objectStore(STORE_NAME)
-
-      for (const presentation of presentations) {
-        store.put(presentation)
-      }
-
-      await new Promise<void>((resolve, reject) => {
-        transaction.oncomplete = () => resolve()
-        transaction.onerror = () => reject(transaction.error)
-      })
-
-      console.log(`Migrated ${presentations.length} presentations to IndexedDB`)
-    }
-
-    // Clear old localStorage data after successful migration
-    localStorage.removeItem('narrator-storage')
-    localStorage.setItem(MIGRATION_KEY, 'true')
-  } catch (error) {
-    console.error('Migration from localStorage failed:', error)
-  }
 }
 
 interface PersistedState {

@@ -81,14 +81,9 @@ export function InputState({ activeTab, onTabChange }: InputStateProps) {
           >
             {activeTab === 'create' && (
               <Card className="border-0 shadow-2xl">
-                <CardContent className="space-y-8 p-8 sm:p-12">
+                <CardContent className="space-y-8 p-6 sm:p-8">
                   {/* Content Input */}
-                  <div className="space-y-2">
-                    <label className="text-muted-foreground text-sm font-medium">
-                      What do you want to present?
-                    </label>
-                    <ContentInput />
-                  </div>
+                  <ContentInput />
 
                   {/* Style Selector */}
                   <StyleSelector />

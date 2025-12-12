@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useNarratorStore } from '@/lib/store'
-import { FolderOpen, Trash2, FileText, Library, Sparkles, Download, MoreHorizontal, PenLine } from 'lucide-react'
+import { FolderOpen, Trash2, FileText, Library, Sparkles, Download, PenLine } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { ExportButton } from '@/components/export-import'

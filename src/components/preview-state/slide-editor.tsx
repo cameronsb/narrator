@@ -39,9 +39,10 @@ export function SlideEditor() {
     })
   )
 
-  // Generate stable IDs for slides
+  // Generate stable IDs for slides (index-based, only depends on count)
   const slideIds = useMemo(
     () => presentationData?.slides.map((_, i) => `slide-${i}`) ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only regenerate when length changes, not content
     [presentationData?.slides.length]
   )
 
