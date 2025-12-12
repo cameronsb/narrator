@@ -348,4 +348,288 @@ describe('NarratorStore', () => {
       expect(state.currentSlide).toBe(0)
     })
   })
+
+  describe('History (Undo/Redo)', () => {
+    beforeEach(() => {
+      useNarratorStore.setState({
+        presentationData: null,
+        history: { past: [], future: [] },
+      })
+    })
+
+    describe('pushHistory', () => {
+      it('should add current state to past', () => {
+        useNarratorStore.setState({ presentationData: mockPresentationData })
+        useNarratorStore.getState().pushHistory()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(1)
+        expect(history.past[0]).toEqual(mockPresentationData)
+      })
+
+      it('should clear future on new changes', () => {
+        useNarratorStore.setState({
+          presentationData: mockPresentationData,
+          history: { past: [], future: [mockPresentationData] },
+        })
+
+        useNarratorStore.getState().pushHistory()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.future).toHaveLength(0)
+      })
+
+      it('should limit history to 50 entries', () => {
+        useNarratorStore.setState({ presentationData: mockPresentationData })
+
+        // Push 60 entries
+        for (let i = 0; i < 60; i++) {
+          useNarratorStore.getState().pushHistory()
+        }
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(50)
+      })
+
+      it('should not push if presentationData is null', () => {
+        useNarratorStore.setState({ presentationData: null })
+        useNarratorStore.getState().pushHistory()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(0)
+      })
+
+      it('should deep clone state (not reference)', () => {
+        useNarratorStore.setState({ presentationData: structuredClone(mockPresentationData) })
+        useNarratorStore.getState().pushHistory()
+
+        // Modify the current state
+        useNarratorStore.getState().updateSlide(0, { title: 'Modified Title' })
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past[0].slides[0].title).toBe('Slide 1')
+      })
+    })
+
+    describe('undo', () => {
+      it('should restore previous state', () => {
+        useNarratorStore.setState({ presentationData: structuredClone(mockPresentationData) })
+        useNarratorStore.getState().pushHistory()
+        useNarratorStore.getState().updateSlide(0, { title: 'Modified' })
+        useNarratorStore.getState().undo()
+
+        const { presentationData } = useNarratorStore.getState()
+        expect(presentationData?.slides[0].title).toBe('Slide 1')
+      })
+
+      it('should move current state to future', () => {
+        useNarratorStore.setState({ presentationData: structuredClone(mockPresentationData) })
+        useNarratorStore.getState().pushHistory()
+        useNarratorStore.getState().updateSlide(0, { title: 'Modified' })
+        useNarratorStore.getState().undo()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.future).toHaveLength(1)
+        expect(history.future[0].slides[0].title).toBe('Modified')
+      })
+
+      it('should do nothing if past is empty', () => {
+        useNarratorStore.setState({
+          presentationData: mockPresentationData,
+          history: { past: [], future: [] },
+        })
+        useNarratorStore.getState().undo()
+
+        const { presentationData, history } = useNarratorStore.getState()
+        expect(presentationData).toEqual(mockPresentationData)
+        expect(history.past).toHaveLength(0)
+      })
+
+      it('should do nothing if presentationData is null', () => {
+        useNarratorStore.setState({
+          presentationData: null,
+          history: { past: [mockPresentationData], future: [] },
+        })
+        useNarratorStore.getState().undo()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(1)
+      })
+    })
+
+    describe('redo', () => {
+      it('should restore next state from future', () => {
+        useNarratorStore.setState({ presentationData: structuredClone(mockPresentationData) })
+        useNarratorStore.getState().pushHistory()
+        useNarratorStore.getState().updateSlide(0, { title: 'Modified' })
+        useNarratorStore.getState().undo()
+        useNarratorStore.getState().redo()
+
+        const { presentationData } = useNarratorStore.getState()
+        expect(presentationData?.slides[0].title).toBe('Modified')
+      })
+
+      it('should move current state to past', () => {
+        useNarratorStore.setState({ presentationData: structuredClone(mockPresentationData) })
+        useNarratorStore.getState().pushHistory()
+        useNarratorStore.getState().updateSlide(0, { title: 'Modified' })
+        useNarratorStore.getState().undo()
+        useNarratorStore.getState().redo()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(1)
+        expect(history.future).toHaveLength(0)
+      })
+
+      it('should do nothing if future is empty', () => {
+        useNarratorStore.setState({
+          presentationData: mockPresentationData,
+          history: { past: [mockPresentationData], future: [] },
+        })
+        useNarratorStore.getState().redo()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.future).toHaveLength(0)
+      })
+    })
+
+    describe('clearHistory', () => {
+      it('should clear both past and future', () => {
+        useNarratorStore.setState({
+          presentationData: mockPresentationData,
+          history: {
+            past: [mockPresentationData, mockPresentationData],
+            future: [mockPresentationData],
+          },
+        })
+
+        useNarratorStore.getState().clearHistory()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(0)
+        expect(history.future).toHaveLength(0)
+      })
+    })
+
+    describe('canUndo / canRedo', () => {
+      it('canUndo should return true when past has entries', () => {
+        useNarratorStore.setState({
+          history: { past: [mockPresentationData], future: [] },
+        })
+
+        expect(useNarratorStore.getState().canUndo()).toBe(true)
+      })
+
+      it('canUndo should return false when past is empty', () => {
+        useNarratorStore.setState({
+          history: { past: [], future: [] },
+        })
+
+        expect(useNarratorStore.getState().canUndo()).toBe(false)
+      })
+
+      it('canRedo should return true when future has entries', () => {
+        useNarratorStore.setState({
+          history: { past: [], future: [mockPresentationData] },
+        })
+
+        expect(useNarratorStore.getState().canRedo()).toBe(true)
+      })
+
+      it('canRedo should return false when future is empty', () => {
+        useNarratorStore.setState({
+          history: { past: [], future: [] },
+        })
+
+        expect(useNarratorStore.getState().canRedo()).toBe(false)
+      })
+    })
+
+    describe('history cleared on navigation', () => {
+      it('setPresentationData should clear history', () => {
+        useNarratorStore.setState({
+          history: { past: [mockPresentationData], future: [mockPresentationData] },
+        })
+
+        useNarratorStore.getState().setPresentationData(mockPresentationData)
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(0)
+        expect(history.future).toHaveLength(0)
+      })
+
+      it('loadPresentation should clear history', () => {
+        useNarratorStore.setState({
+          savedPresentations: [
+            {
+              id: 'test-id',
+              name: 'Test',
+              savedAt: Date.now(),
+              presentationData: mockPresentationData,
+              audioUrls: {},
+              style: 'narrative',
+              voice: 'nova',
+            },
+          ],
+          history: { past: [mockPresentationData], future: [mockPresentationData] },
+        })
+
+        useNarratorStore.getState().loadPresentation('test-id')
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(0)
+        expect(history.future).toHaveLength(0)
+      })
+
+      it('clearActiveSession should clear history', () => {
+        useNarratorStore.setState({
+          presentationData: mockPresentationData,
+          history: { past: [mockPresentationData], future: [mockPresentationData] },
+        })
+
+        useNarratorStore.getState().clearActiveSession()
+
+        const { history } = useNarratorStore.getState()
+        expect(history.past).toHaveLength(0)
+        expect(history.future).toHaveLength(0)
+      })
+    })
+
+    describe('multiple undo/redo cycles', () => {
+      it('should handle multiple undo/redo operations', () => {
+        useNarratorStore.setState({ presentationData: structuredClone(mockPresentationData) })
+
+        // Make 3 changes
+        useNarratorStore.getState().pushHistory()
+        useNarratorStore.getState().updateSlide(0, { title: 'Change 1' })
+
+        useNarratorStore.getState().pushHistory()
+        useNarratorStore.getState().updateSlide(0, { title: 'Change 2' })
+
+        useNarratorStore.getState().pushHistory()
+        useNarratorStore.getState().updateSlide(0, { title: 'Change 3' })
+
+        // Verify current state
+        expect(useNarratorStore.getState().presentationData?.slides[0].title).toBe('Change 3')
+
+        // Undo twice
+        useNarratorStore.getState().undo()
+        expect(useNarratorStore.getState().presentationData?.slides[0].title).toBe('Change 2')
+
+        useNarratorStore.getState().undo()
+        expect(useNarratorStore.getState().presentationData?.slides[0].title).toBe('Change 1')
+
+        // Redo once
+        useNarratorStore.getState().redo()
+        expect(useNarratorStore.getState().presentationData?.slides[0].title).toBe('Change 2')
+
+        // Make a new change (should clear future)
+        useNarratorStore.getState().pushHistory()
+        useNarratorStore.getState().updateSlide(0, { title: 'New Branch' })
+
+        expect(useNarratorStore.getState().history.future).toHaveLength(0)
+        expect(useNarratorStore.getState().presentationData?.slides[0].title).toBe('New Branch')
+      })
+    })
+  })
 })

@@ -69,9 +69,7 @@ export function ImportTab({ onImport }: ImportTabProps) {
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold">Import Presentation</h2>
-          <p className="text-muted-foreground text-sm">
-            Open a .narrator file shared with you
-          </p>
+          <p className="text-muted-foreground text-sm">Open a .narrator file shared with you</p>
         </div>
 
         {/* Drop zone */}

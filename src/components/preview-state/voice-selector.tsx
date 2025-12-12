@@ -72,16 +72,18 @@ export function VoiceSelector() {
                 />
                 <Label
                   htmlFor={`voice-${voiceKey}`}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 py-2 pr-2 pl-4 text-white transition-all hover:border-white/50 hover:bg-white/20 peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white peer-data-[state=checked]:font-semibold peer-data-[state=checked]:text-primary peer-data-[state=checked]:hover:border-white peer-data-[state=checked]:hover:bg-white/95"
+                  className="peer-data-[state=checked]:text-primary flex cursor-pointer items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 py-2 pr-2 pl-4 text-white transition-all peer-data-[state=checked]:border-white peer-data-[state=checked]:bg-white peer-data-[state=checked]:font-semibold hover:border-white/50 hover:bg-white/20 peer-data-[state=checked]:hover:border-white peer-data-[state=checked]:hover:bg-white/95"
                   title={config.description}
                 >
                   {config.label}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 rounded-full text-current opacity-60 transition-opacity hover:bg-black/10 hover:opacity-100 peer-data-[state=checked]:group-[]:hover:bg-primary/10"
+                    className="peer-data-[state=checked]:group-[]:hover:bg-primary/10 h-6 w-6 rounded-full text-current opacity-60 transition-opacity hover:bg-black/10 hover:opacity-100"
                     onClick={(e) => handlePreview(voiceKey, e)}
-                    aria-label={isPlaying ? `Stop ${config.label} preview` : `Preview ${config.label} voice`}
+                    aria-label={
+                      isPlaying ? `Stop ${config.label} preview` : `Preview ${config.label} voice`
+                    }
                   >
                     {isPlaying ? (
                       <Square className="h-3 w-3 fill-current" />

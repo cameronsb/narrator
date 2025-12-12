@@ -205,13 +205,8 @@ export default function Home() {
       <DemoModeBanner />
 
       {/* Fade in after hydration to prevent flash of wrong content */}
-      <div
-        className="transition-opacity duration-150"
-        style={{ opacity: isHydrated ? 1 : 0 }}
-      >
-        {appState === 'input' && (
-          <InputState activeTab={activeTab} onTabChange={handleTabChange} />
-        )}
+      <div className="transition-opacity duration-150" style={{ opacity: isHydrated ? 1 : 0 }}>
+        {appState === 'input' && <InputState activeTab={activeTab} onTabChange={handleTabChange} />}
         {appState === 'preview' && <PreviewState />}
         {appState === 'viewer' && <ViewerState />}
       </div>

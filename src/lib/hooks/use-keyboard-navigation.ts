@@ -66,13 +66,5 @@ export function useKeyboardNavigation() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [
-    appState,
-    currentSlide,
-    getTotalSlides,
-    setCurrentSlide,
-    setAppState,
-    togglePlayPause,
-    stop,
-  ])
+  }, [appState, currentSlide, getTotalSlides, setCurrentSlide, setAppState, togglePlayPause, stop])
 }

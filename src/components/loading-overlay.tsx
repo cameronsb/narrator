@@ -19,11 +19,11 @@ const MODEL_INFO = {
 
 function PulsingDots() {
   return (
-    <div className="flex items-center justify-center gap-2 mb-6">
+    <div className="mb-6 flex items-center justify-center gap-2">
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="h-3 w-3 rounded-full bg-primary"
+          className="bg-primary h-3 w-3 rounded-full"
           animate={{
             scale: [1, 1.3, 1],
             opacity: [0.5, 1, 0.5],
@@ -32,7 +32,7 @@ function PulsingDots() {
             duration: 1,
             repeat: Infinity,
             delay: i * 0.2,
-            ease: "easeInOut",
+            ease: 'easeInOut',
           }}
         />
       ))}
@@ -42,16 +42,16 @@ function PulsingDots() {
 
 function ShimmerBar() {
   return (
-    <div className="w-72 h-2 bg-primary/20 rounded-full overflow-hidden relative">
+    <div className="bg-primary/20 relative h-2 w-72 overflow-hidden rounded-full">
       <motion.div
-        className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent"
+        className="via-primary absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent to-transparent"
         animate={{
           x: ['-100%', '400%'],
         }}
         transition={{
           duration: 1.5,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       />
     </div>

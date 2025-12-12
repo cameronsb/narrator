@@ -2,6 +2,8 @@
 
 Transform any text into AI-narrated presentations with natural voice synthesis.
 
+![Narrator Hero](docs/hero.png)
+
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8)
@@ -15,10 +17,10 @@ Transform any text into AI-narrated presentations with natural voice synthesis.
 - **Bullet Management** - Add and remove bullet points per slide
 - **Presentation Library** - Save presentations locally with IndexedDB persistence
 - **Import/Export** - Share presentations via `.narrator` file format
-- **Presentation Viewer** - Full-screen presentation with auto-advance and keyboard navigation
-- **Progressive Degradation** - Works in demo mode without API keys
+- **Presentation Viewer** - Full-screen playback with auto-advance and captions
+- **Session Recovery** - Auto-save drafts and recover interrupted sessions
+- **URL Routing** - Shareable hash-based URLs for each app state
 - **Accessible by Default** - Built on Radix UI primitives for WCAG compliance
-- **Fully Tested** - Comprehensive unit tests covering store actions and components
 
 ## Tech Stack
 
@@ -26,7 +28,7 @@ Transform any text into AI-narrated presentations with natural voice synthesis.
 | ----------- | ------------------------------ |
 | Framework   | Next.js 16 (App Router)        |
 | Language    | TypeScript 5                   |
-| Styling     | Tailwind CSS 4.0               |
+| Styling     | Tailwind CSS 4                 |
 | Components  | ShadCN/UI (Radix primitives)   |
 | State       | Zustand                        |
 | Animations  | Framer Motion                  |
@@ -62,14 +64,14 @@ src/
 │   │   ├── generate-slides/    # Claude/GPT-4 slide generation
 │   │   └── generate-audio/     # OpenAI TTS
 │   ├── layout.tsx              # Root layout with Toaster
-│   └── page.tsx                # Main SPA entry
+│   └── page.tsx                # Main SPA entry with routing
 ├── components/
 │   ├── ui/                     # ShadCN components
-│   ├── home-tabs/              # Library and import tabs
+│   ├── home-tabs/              # Create, Library, Import tabs
 │   ├── input-state/            # Content input, style selector
 │   ├── preview-state/          # Slide editor, voice selector
 │   ├── viewer-state/           # Presentation playback
-│   ├── export-import/          # .narrator file export/import
+│   ├── export-import/          # .narrator file handling
 │   └── states/                 # State wrapper components
 └── lib/
     ├── store.ts                # Zustand state management
@@ -79,17 +81,57 @@ src/
     └── hooks/                  # Custom React hooks
 ```
 
-## Application States
+## Application Flow
 
 ```
-┌─────────────┐      Generate      ┌─────────────┐      Present       ┌─────────────┐
-│   INPUT     │ ───────────────▶   │   PREVIEW   │ ───────────────▶   │   VIEWER    │
-│             │                    │             │                    │             │
-│ • Content   │                    │ • Edit      │                    │ • Playback  │
-│ • Style     │                    │ • Voice     │                    │ • Navigate  │
-│ • Examples  │     ◀───────────── │ • Cards     │     ◀───────────── │ • Script    │
-└─────────────┘        Back        └─────────────┘        Exit        └─────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                   HOME                                       │
+│                                                                              │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐                               │
+│   │  Create  │    │  Library │    │  Import  │     ← Tabs                    │
+│   │  #/      │    │ #/library│    │ #/import │                               │
+│   └────┬─────┘    └────┬─────┘    └────┬─────┘                               │
+│        │               │               │                                     │
+│        ▼               ▼               ▼                                     │
+│   [Generate]      [Load saved]    [Import file]                              │
+│                                                                              │
+└────────┬───────────────┴───────────────┴─────────────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              PREVIEW  #/preview                              │
+│                                                                              │
+│   • Edit slides (drag-and-drop reorder)                                      │
+│   • Edit titles, bullets, scripts                                            │
+│   • Select voice                                                             │
+│   • Generate audio                                                           │
+│   • Save to library                                                          │
+│   • Export .narrator file                                                    │
+│                                                                              │
+└────────┬─────────────────────────────────────────────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              VIEWER  #/present                               │
+│                                                                              │
+│   • Full-screen presentation                                                 │
+│   • Auto-advance with audio                                                  │
+│   • Keyboard navigation                                                      │
+│   • Toggleable captions                                                      │
+│   • Playback speed control                                                   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+## URL Routes
+
+| Route       | State   | Description                     |
+| ----------- | ------- | ------------------------------- |
+| `#/`        | Home    | Create new presentation         |
+| `#/library` | Home    | Browse saved presentations      |
+| `#/import`  | Home    | Import .narrator file           |
+| `#/preview` | Preview | Edit and configure presentation |
+| `#/present` | Viewer  | Full-screen presentation mode   |
 
 ## Keyboard Shortcuts (Viewer)
 

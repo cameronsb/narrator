@@ -14,6 +14,9 @@ export interface SavedPresentation {
   isDraft?: boolean // true = auto-saved working session, not explicitly saved
 }
 
+// Maximum history entries to prevent memory bloat
+const MAX_HISTORY_SIZE = 50
+
 interface NarratorStore {
   // Navigation
   appState: AppState
@@ -41,6 +44,18 @@ interface NarratorStore {
   // Bullet CRUD operations
   addBullet: (slideIndex: number) => void
   removeBullet: (slideIndex: number, bulletIndex: number) => void
+
+  // History (undo/redo)
+  history: {
+    past: PresentationData[]
+    future: PresentationData[]
+  }
+  pushHistory: () => void
+  undo: () => void
+  redo: () => void
+  clearHistory: () => void
+  canUndo: () => boolean
+  canRedo: () => boolean
 
   // Viewer state (session-specific)
   currentSlide: number
@@ -111,6 +126,10 @@ const initialState = {
   savedPresentations: [] as SavedPresentation[],
   lastGeneratedContentHash: null as string | null,
   activePresentationId: null as string | null,
+  history: {
+    past: [] as PresentationData[],
+    future: [] as PresentationData[],
+  },
 }
 
 export const useNarratorStore = create<NarratorStore>()(
@@ -122,7 +141,8 @@ export const useNarratorStore = create<NarratorStore>()(
       setContent: (content) => set({ content }),
       setStyle: (style) => set({ style }),
       setVoice: (voice) => set({ voice }),
-      setPresentationData: (presentationData) => set({ presentationData }),
+      setPresentationData: (presentationData) =>
+        set({ presentationData, history: { past: [], future: [] } }),
 
       updateSlide: (index, slideUpdate) =>
         set((state) => {
@@ -210,6 +230,82 @@ export const useNarratorStore = create<NarratorStore>()(
           }
         }),
 
+      // History (undo/redo)
+      pushHistory: () => {
+        const { presentationData, history } = get()
+        if (!presentationData) return
+
+        // Deep clone current state
+        const snapshot = structuredClone(presentationData)
+
+        // Add to past, clear future (new branch of history)
+        const newPast = [...history.past, snapshot]
+
+        // Trim to max size
+        if (newPast.length > MAX_HISTORY_SIZE) {
+          newPast.shift()
+        }
+
+        set({
+          history: {
+            past: newPast,
+            future: [],
+          },
+        })
+      },
+
+      undo: () => {
+        const { presentationData, history } = get()
+        if (history.past.length === 0 || !presentationData) return
+
+        // Get previous state
+        const newPast = [...history.past]
+        const previous = newPast.pop()!
+
+        // Current state goes to future
+        const newFuture = [structuredClone(presentationData), ...history.future]
+
+        set({
+          presentationData: previous,
+          history: {
+            past: newPast,
+            future: newFuture,
+          },
+        })
+      },
+
+      redo: () => {
+        const { presentationData, history } = get()
+        if (history.future.length === 0 || !presentationData) return
+
+        // Get next state
+        const newFuture = [...history.future]
+        const next = newFuture.shift()!
+
+        // Current state goes to past
+        const newPast = [...history.past, structuredClone(presentationData)]
+
+        set({
+          presentationData: next,
+          history: {
+            past: newPast,
+            future: newFuture,
+          },
+        })
+      },
+
+      clearHistory: () => {
+        set({
+          history: {
+            past: [],
+            future: [],
+          },
+        })
+      },
+
+      canUndo: () => get().history.past.length > 0,
+      canRedo: () => get().history.future.length > 0,
+
       setCurrentSlide: (currentSlide) => set({ currentSlide }),
       setIsPlaying: (isPlaying) => set({ isPlaying }),
       setIsMuted: (isMuted) => set({ isMuted }),
@@ -232,7 +328,7 @@ export const useNarratorStore = create<NarratorStore>()(
         let hash = 0
         for (let i = 0; i < content.length; i++) {
           const char = content.charCodeAt(i)
-          hash = ((hash << 5) - hash) + char
+          hash = (hash << 5) - hash + char
           hash = hash & hash // Convert to 32bit integer
         }
         return hash.toString(36)
@@ -256,8 +352,14 @@ export const useNarratorStore = create<NarratorStore>()(
       setActivePresentationId: (activePresentationId) => set({ activePresentationId }),
 
       saveAsDraft: () => {
-        const { presentationData, audioUrls, style, voice, savedPresentations, activePresentationId } =
-          get()
+        const {
+          presentationData,
+          audioUrls,
+          style,
+          voice,
+          savedPresentations,
+          activePresentationId,
+        } = get()
         if (!presentationData) return null
 
         // Check if we're updating an existing draft
@@ -311,6 +413,7 @@ export const useNarratorStore = create<NarratorStore>()(
           audioUrls: {},
           currentSlide: 0,
           lastGeneratedContentHash: null,
+          history: { past: [], future: [] },
         })
       },
 
@@ -351,8 +454,14 @@ export const useNarratorStore = create<NarratorStore>()(
 
       // Saved presentations
       saveCurrentPresentation: (name: string) => {
-        const { presentationData, audioUrls, style, voice, savedPresentations, activePresentationId } =
-          get()
+        const {
+          presentationData,
+          audioUrls,
+          style,
+          voice,
+          savedPresentations,
+          activePresentationId,
+        } = get()
         if (!presentationData) return
 
         // Check if we're updating an existing presentation (draft or not)
@@ -404,6 +513,7 @@ export const useNarratorStore = create<NarratorStore>()(
         if (!presentation) return
 
         // Set the presentation data and mark this as the active session
+        // Clear history when loading a different presentation
         set({
           presentationData: presentation.presentationData,
           audioUrls: presentation.audioUrls,
@@ -412,6 +522,7 @@ export const useNarratorStore = create<NarratorStore>()(
           appState: 'preview',
           currentSlide: 0,
           activePresentationId: id,
+          history: { past: [], future: [] },
         })
 
         // Calculate and set the content hash if audio exists
@@ -449,6 +560,7 @@ export const useNarratorStore = create<NarratorStore>()(
         }
 
         // Save to library, set as current, and mark as active session
+        // Clear history when importing a presentation
         set({
           savedPresentations: [...savedPresentations, newPresentation],
           presentationData: data.presentationData,
@@ -458,6 +570,7 @@ export const useNarratorStore = create<NarratorStore>()(
           currentSlide: 0,
           appState: mode === 'view' ? 'viewer' : 'preview',
           activePresentationId: newId,
+          history: { past: [], future: [] },
         })
 
         // Calculate and set the content hash if audio exists

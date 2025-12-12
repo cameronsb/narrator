@@ -40,9 +40,7 @@ export function ImportDialog({ open, onOpenChange, data }: ImportDialogProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Import Presentation</DialogTitle>
-          <DialogDescription>
-            This presentation will be added to your library.
-          </DialogDescription>
+          <DialogDescription>This presentation will be added to your library.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

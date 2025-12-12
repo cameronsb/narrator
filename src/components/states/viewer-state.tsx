@@ -21,13 +21,13 @@ function ViewerStateContent() {
   useKeyboardNavigation()
 
   return (
-    <div className="bg-surface min-h-screen pb-16">
+    <div className="bg-surface min-h-screen">
       <ViewerIntro />
       {/* Top bar: Progress, Exit button, Counter */}
       <ViewerProgress />
       <ViewerTopBar />
       <ViewerCounter />
-      {/* Main content */}
+      {/* Main content - fixed positioned, scales to fit */}
       <SlideDisplay />
       {/* Captions below slide */}
       <CaptionBar />

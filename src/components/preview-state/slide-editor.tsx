@@ -27,6 +27,23 @@ export function SlideEditor() {
   const addSlide = useNarratorStore((s) => s.addSlide)
   const removeSlide = useNarratorStore((s) => s.removeSlide)
   const reorderSlides = useNarratorStore((s) => s.reorderSlides)
+  const pushHistory = useNarratorStore((s) => s.pushHistory)
+
+  // Wrapped operations that capture history before executing
+  const handleAddSlide = (afterIndex: number) => {
+    pushHistory()
+    addSlide(afterIndex)
+  }
+
+  const handleRemoveSlide = (index: number) => {
+    pushHistory()
+    removeSlide(index)
+  }
+
+  const handleReorderSlides = (fromIndex: number, toIndex: number) => {
+    pushHistory()
+    reorderSlides(fromIndex, toIndex)
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -56,7 +73,7 @@ export function SlideEditor() {
     if (over && active.id !== over.id) {
       const oldIndex = slideIds.indexOf(active.id as string)
       const newIndex = slideIds.indexOf(over.id as string)
-      reorderSlides(oldIndex, newIndex)
+      handleReorderSlides(oldIndex, newIndex)
     }
   }
 
@@ -66,23 +83,19 @@ export function SlideEditor() {
       <SlideCard index={0} isTitle />
 
       {/* Add slide after title */}
-      <AddSlideButton onClick={() => addSlide(-1)} label="Add slide after title" />
+      <AddSlideButton onClick={() => handleAddSlide(-1)} label="Add slide after title" />
 
       {/* Sortable content slides */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={slideIds} strategy={verticalListSortingStrategy}>
           {presentationData.slides.map((_, index) => (
             <SortableSlide
               key={slideIds[index]}
               id={slideIds[index]}
               index={index}
-              onRemove={() => removeSlide(index)}
+              onRemove={() => handleRemoveSlide(index)}
               canRemove={canRemoveSlides}
-              onAddSlide={() => addSlide(index)}
+              onAddSlide={() => handleAddSlide(index)}
             />
           ))}
         </SortableContext>
@@ -100,14 +113,9 @@ interface SortableSlideProps {
 }
 
 function SortableSlide({ id, index, onRemove, canRemove, onAddSlide }: SortableSlideProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  })
 
   const style = {
     transform: CSS.Transform.toString(transform),

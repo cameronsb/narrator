@@ -112,9 +112,11 @@ export function LibraryTab({ onSwitchTab }: LibraryTabProps) {
                 <CardContent className="p-4">
                   {/* Card header with icon */}
                   <div className="mb-3 flex items-start justify-between">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                      presentation.isDraft ? 'bg-amber-500/10' : 'bg-primary/10'
-                    }`}>
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                        presentation.isDraft ? 'bg-amber-500/10' : 'bg-primary/10'
+                      }`}
+                    >
                       {presentation.isDraft ? (
                         <PenLine className="h-5 w-5 text-amber-500" />
                       ) : (
@@ -123,7 +125,12 @@ export function LibraryTab({ onSwitchTab }: LibraryTabProps) {
                     </div>
                     {/* Action menu button */}
                     <div className="flex gap-1">
-                      <ExportButton presentation={presentation} variant="ghost" size="icon" iconOnly />
+                      <ExportButton
+                        presentation={presentation}
+                        variant="ghost"
+                        size="icon"
+                        iconOnly
+                      />
                       <Button
                         size="icon"
                         variant={deletingId === presentation.id ? 'destructive' : 'ghost'}

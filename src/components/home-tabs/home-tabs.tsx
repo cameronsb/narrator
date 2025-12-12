@@ -28,11 +28,7 @@ export function HomeTabs({ activeTab, onTabChange, libraryCount }: HomeTabsProps
             const showBadge = tab.id === 'library' && libraryCount > 0
 
             return (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="relative gap-2 px-4 py-2 text-sm"
-              >
+              <TabsTrigger key={tab.id} value={tab.id} className="relative gap-2 px-4 py-2 text-sm">
                 <Icon className="h-4 w-4" />
                 {tab.label}
                 {showBadge && (

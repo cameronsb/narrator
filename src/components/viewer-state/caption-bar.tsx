@@ -35,10 +35,7 @@ function countWords(text: string): number {
  * Calculate which sentence index should be active based on progress.
  * Uses word count proportions to estimate timing.
  */
-function getActiveSentenceIndex(
-  sentences: string[],
-  progress: number
-): number {
+function getActiveSentenceIndex(sentences: string[], progress: number): number {
   if (sentences.length === 0) return -1
   if (sentences.length === 1) return 0
   if (progress <= 0) return 0
@@ -109,7 +106,7 @@ export function CaptionBar() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 10 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-          className="fixed bottom-16 left-0 right-0 z-40 px-4 sm:px-8"
+          className="fixed right-0 bottom-16 left-0 z-40 px-4 sm:px-8"
           role="region"
           aria-label="Captions"
           aria-live="polite"
@@ -141,7 +138,7 @@ export function CaptionBar() {
                             ref={isActive ? activeRef : undefined}
                             className={`transition-all duration-200 ${
                               isActive
-                                ? 'text-white font-medium'
+                                ? 'font-medium text-white'
                                 : isPast
                                   ? 'text-white/50'
                                   : 'text-white/70'

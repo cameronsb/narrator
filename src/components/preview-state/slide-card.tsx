@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -36,6 +37,13 @@ export function SlideCard({
   const updateMetadata = useNarratorStore((s) => s.updateMetadata)
   const addBullet = useNarratorStore((s) => s.addBullet)
   const removeBullet = useNarratorStore((s) => s.removeBullet)
+  const pushHistory = useNarratorStore((s) => s.pushHistory)
+
+  // Snapshot state before editing starts (on focus)
+  // This groups all edits during an editing session into a single undo step
+  const handleFocus = useCallback(() => {
+    pushHistory()
+  }, [pushHistory])
 
   if (!presentationData) return null
 
@@ -84,7 +92,9 @@ export function SlideCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.4 }}
     >
-      <Card className={`shadow-lg transition-shadow ${isDragging ? 'shadow-xl ring-2 ring-brand-400' : ''}`}>
+      <Card
+        className={`shadow-lg transition-shadow ${isDragging ? 'ring-brand-400 shadow-xl ring-2' : ''}`}
+      >
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
             {/* Drag handle (only for content slides) */}
@@ -104,6 +114,7 @@ export function SlideCard({
             <Input
               value={slide.title}
               onChange={(e) => handleTitleChange(e.target.value)}
+              onFocus={handleFocus}
               className="focus-visible:border-primary flex-1 rounded-none border-0 border-b-2 border-transparent px-0 text-xl font-semibold focus-visible:ring-0"
               placeholder="Slide title"
             />
@@ -129,6 +140,7 @@ export function SlideCard({
                 <Input
                   value={point}
                   onChange={(e) => handlePointChange(pointIndex, e.target.value)}
+                  onFocus={handleFocus}
                   className="border-border focus-visible:border-primary rounded-none border-0 border-b px-0 focus-visible:ring-0"
                   placeholder="Bullet point"
                 />
@@ -136,7 +148,10 @@ export function SlideCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeBullet(index, pointIndex)}
+                    onClick={() => {
+                      pushHistory()
+                      removeBullet(index, pointIndex)
+                    }}
                     className="text-muted-foreground hover:text-destructive h-7 w-7 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                     aria-label="Remove bullet point"
                   >
@@ -149,7 +164,10 @@ export function SlideCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => addBullet(index)}
+                onClick={() => {
+                  pushHistory()
+                  addBullet(index)
+                }}
                 className="text-muted-foreground hover:text-foreground mt-1 h-7 gap-1 px-2 text-xs"
               >
                 <Plus className="h-3 w-3" />
@@ -166,6 +184,7 @@ export function SlideCard({
             <Textarea
               value={slide.script}
               onChange={(e) => handleScriptChange(e.target.value)}
+              onFocus={handleFocus}
               placeholder="Enter the script for AI voice narration..."
               className="min-h-[100px] resize-y"
             />

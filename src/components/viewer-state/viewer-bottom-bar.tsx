@@ -35,7 +35,7 @@ export function ViewerBottomBar() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-2 bg-slate-900/95 px-4 py-3 backdrop-blur-sm sm:px-6"
+      className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-between gap-2 bg-slate-900/95 px-4 py-3 backdrop-blur-sm sm:px-6"
       role="toolbar"
       aria-label="Presentation controls"
     >
