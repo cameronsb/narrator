@@ -9,8 +9,9 @@ import { Settings, Volume2 } from 'lucide-react'
 import { useSettings } from '@/lib/hooks/use-settings'
 
 export function SettingsPopover() {
-  const { settings, setVolume, setSpeed, setAutoAdvance } = useSettings()
+  const { settings, setVolume, setSpeed, setAutoAdvance, setCaptionsEnabled } = useSettings()
   const { volume, speed: playbackSpeed, autoAdvance } = settings.playback
+  const { enabled: captionsEnabled } = settings.captions
 
   return (
     <Popover>
@@ -64,16 +65,28 @@ export function SettingsPopover() {
             </div>
           </div>
 
-          {/* Auto-advance toggle */}
-          <div className="flex items-center gap-2 pt-2">
-            <Checkbox
-              id="settings-auto-advance"
-              checked={autoAdvance}
-              onCheckedChange={(checked) => setAutoAdvance(checked === true)}
-            />
-            <Label htmlFor="settings-auto-advance" className="cursor-pointer text-sm">
-              Auto-advance slides
-            </Label>
+          {/* Toggles */}
+          <div className="space-y-3 border-t pt-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="settings-captions"
+                checked={captionsEnabled}
+                onCheckedChange={(checked) => setCaptionsEnabled(checked === true)}
+              />
+              <Label htmlFor="settings-captions" className="cursor-pointer text-sm">
+                Show captions
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="settings-auto-advance"
+                checked={autoAdvance}
+                onCheckedChange={(checked) => setAutoAdvance(checked === true)}
+              />
+              <Label htmlFor="settings-auto-advance" className="cursor-pointer text-sm">
+                Auto-advance slides
+              </Label>
+            </div>
           </div>
         </div>
       </PopoverContent>

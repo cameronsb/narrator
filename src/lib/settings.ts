@@ -4,6 +4,9 @@ export interface UserSettings {
     speed: number
     autoAdvance: boolean
   }
+  captions: {
+    enabled: boolean
+  }
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
@@ -11,6 +14,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
     volume: 0.6,
     speed: 1.2,
     autoAdvance: true,
+  },
+  captions: {
+    enabled: true,
   },
 }
 

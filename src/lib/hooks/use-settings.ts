@@ -13,6 +13,10 @@ function mergeWithDefaults(stored: Partial<UserSettings>): UserSettings {
       ...DEFAULT_SETTINGS.playback,
       ...(stored.playback || {}),
     },
+    captions: {
+      ...DEFAULT_SETTINGS.captions,
+      ...(stored.captions || {}),
+    },
   }
 }
 
@@ -67,6 +71,16 @@ export function useSettings() {
     }))
   }
 
+  const setCaptionsEnabled = (enabled: boolean) => {
+    setSettings((prev) => ({
+      ...prev,
+      captions: {
+        ...prev.captions,
+        enabled,
+      },
+    }))
+  }
+
   const resetSettings = () => {
     setSettings(DEFAULT_SETTINGS)
   }
@@ -77,6 +91,7 @@ export function useSettings() {
     setVolume,
     setSpeed,
     setAutoAdvance,
+    setCaptionsEnabled,
     resetSettings,
   }
 }

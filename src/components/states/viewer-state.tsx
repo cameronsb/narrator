@@ -2,7 +2,7 @@
 
 import {
   SlideDisplay,
-  ScriptPanel,
+  CaptionBar,
   ViewerProgress,
   ViewerCounter,
   ViewerTopBar,
@@ -29,10 +29,10 @@ function ViewerStateContent() {
       <ViewerCounter />
       {/* Main content */}
       <SlideDisplay />
+      {/* Captions below slide */}
+      <CaptionBar />
       {/* Bottom bar: All playback controls */}
       <ViewerBottomBar />
-      {/* Side panel: Script */}
-      <ScriptPanel />
     </div>
   )
 }

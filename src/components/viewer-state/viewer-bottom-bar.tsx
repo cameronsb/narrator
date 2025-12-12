@@ -1,20 +1,21 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Play, Pause, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
+import { Play, Pause, ChevronLeft, ChevronRight, Captions, CaptionsOff } from 'lucide-react'
 import { useNarratorStore } from '@/lib/store'
 import { useAudio } from '@/lib/audio'
+import { useSettings } from '@/lib/hooks/use-settings'
 import { SettingsPopover } from './settings-popover'
 
 export function ViewerBottomBar() {
   const isPlaying = useNarratorStore((s) => s.isPlaying)
-  const scriptPanelOpen = useNarratorStore((s) => s.scriptPanelOpen)
-  const setScriptPanelOpen = useNarratorStore((s) => s.setScriptPanelOpen)
   const currentSlide = useNarratorStore((s) => s.currentSlide)
   const setCurrentSlide = useNarratorStore((s) => s.setCurrentSlide)
   const getTotalSlides = useNarratorStore((s) => s.getTotalSlides)
 
   const { togglePlayPause } = useAudio()
+  const { settings, setCaptionsEnabled } = useSettings()
+  const captionsEnabled = settings.captions.enabled
 
   const totalSlides = getTotalSlides()
   const isFirst = currentSlide === 0
@@ -64,7 +65,7 @@ export function ViewerBottomBar() {
         </Button>
       </div>
 
-      {/* Center section: Play/Pause, Settings, Script */}
+      {/* Center section: Play/Pause, Settings, Captions */}
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
@@ -82,12 +83,12 @@ export function ViewerBottomBar() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setScriptPanelOpen(!scriptPanelOpen)}
-          aria-label={scriptPanelOpen ? 'Hide script panel' : 'Show script panel'}
-          className={`bg-white/10 text-white hover:bg-white/20 hover:text-white ${scriptPanelOpen ? 'bg-white/20' : ''}`}
+          onClick={() => setCaptionsEnabled(!captionsEnabled)}
+          aria-label={captionsEnabled ? 'Hide captions' : 'Show captions'}
+          className={`bg-white/10 text-white hover:bg-white/20 hover:text-white ${captionsEnabled ? 'bg-white/20' : ''}`}
         >
-          <FileText className="h-4 w-4" />
-          <span className="ml-2 hidden sm:inline">Script</span>
+          {captionsEnabled ? <Captions className="h-4 w-4" /> : <CaptionsOff className="h-4 w-4" />}
+          <span className="ml-2 hidden sm:inline">Captions</span>
         </Button>
       </div>
 

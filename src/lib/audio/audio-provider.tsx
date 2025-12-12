@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useRef,
+  useState,
   useCallback,
   type ReactNode,
 } from 'react'
@@ -29,6 +30,12 @@ interface AudioContextValue {
   pause: () => void
   stop: () => void
   togglePlayPause: () => void
+  /** Current playback progress as a value from 0 to 1 */
+  progress: number
+  /** Current playback time in seconds */
+  currentTime: number
+  /** Total duration in seconds (0 if unknown) */
+  duration: number
 }
 
 const AudioContext = createContext<AudioContextValue | null>(null)
@@ -49,6 +56,11 @@ const AudioContext = createContext<AudioContextValue | null>(null)
 export function AudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
+  // Progress tracking state
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const progress = duration > 0 ? currentTime / duration : 0
+
   // Store state subscriptions
   const currentSlide = useNarratorStore((s) => s.currentSlide)
   const audioUrls = useNarratorStore((s) => s.audioUrls)
@@ -67,8 +79,28 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const audio = new Audio()
     audioRef.current = audio
 
+    // Track playback progress for caption sync
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime)
+    }
+
+    const handleDurationChange = () => {
+      setDuration(audio.duration || 0)
+    }
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration || 0)
+    }
+
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('durationchange', handleDurationChange)
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+
     // Cleanup on unmount
     return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('durationchange', handleDurationChange)
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
       audio.pause()
       audio.src = ''
     }
@@ -115,6 +147,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     if (!audio) return
 
     const audioUrl = audioUrls[currentSlide]
+
+    // Reset progress tracking when slide changes
+    setCurrentTime(0)
+    setDuration(0)
 
     if (isPlaying && audioUrl) {
       // Update source if different (also resets currentTime to 0)
@@ -192,6 +228,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     pause,
     stop,
     togglePlayPause,
+    progress,
+    currentTime,
+    duration,
   }
 
   return <AudioContext.Provider value={value}>{children}</AudioContext.Provider>

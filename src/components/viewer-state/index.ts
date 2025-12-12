@@ -1,7 +1,6 @@
-export { PlaybackControls } from './playback-controls'
 export { SlideDisplay } from './slide-display'
 export { SlideNavigation } from './slide-navigation'
-export { ScriptPanel } from './script-panel'
+export { CaptionBar } from './caption-bar'
 export { ViewerProgress, ViewerCounter, ViewerTopBar } from './viewer-progress'
 export { ViewerIntro } from './viewer-intro'
 export { ViewerBottomBar } from './viewer-bottom-bar'
