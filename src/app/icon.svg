@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 3 28 23" fill="none">
+  <!-- Back slide -->
+  <rect x="6" y="4" width="20" height="15" rx="2" fill="#94d2d4" stroke="#2d7d7f" stroke-width="1.5"/>
+  <!-- Middle slide -->
+  <rect x="4" y="7" width="20" height="15" rx="2" fill="#5bb5b8" stroke="#2d7d7f" stroke-width="1.5"/>
+  <!-- Front slide -->
+  <rect x="2" y="10" width="20" height="15" rx="2" fill="#2d7d7f"/>
+  <!-- Speaker icon -->
+  <path d="M8 15.5H10L13 13V22L10 19.5H8V15.5Z" fill="white"/>
+  <path d="M15.5 15C16.5 15.5 17 16.5 17 17.5C17 18.5 16.5 19.5 15.5 20" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
