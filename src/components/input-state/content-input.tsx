@@ -22,11 +22,7 @@ export function ContentInput() {
 The AI will structure it into clear slides and generate natural voice narration."
         className="min-h-[250px] resize-y text-base"
       />
-      <p className="text-muted-foreground text-sm">
-        {content.length > 0
-          ? `${content.length} characters`
-          : 'Enter at least 100 characters for best results'}
-      </p>
+      <p className="text-muted-foreground text-sm">{content.length} characters</p>
     </div>
   )
 }

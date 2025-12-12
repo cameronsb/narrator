@@ -109,9 +109,7 @@ export function ImportTab({ onImport }: ImportTabProps) {
         </div>
 
         {/* File types hint */}
-        <p className="text-muted-foreground mt-6 text-xs">
-          Accepts .narrator and .json files
-        </p>
+        <p className="text-muted-foreground mt-6 text-xs">Accepts .narrator files</p>
 
         <input
           ref={fileInputRef}
