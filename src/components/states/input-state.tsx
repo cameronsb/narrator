@@ -45,7 +45,7 @@ export function InputState({ activeTab, onTabChange }: InputStateProps) {
     : { duration: 0.2, ease: 'easeOut' as const }
 
   return (
-    <div className="bg-surface flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
+    <div className="bg-surface flex min-h-screen flex-col items-center justify-start p-4 sm:p-8 md:justify-center">
       <motion.div
         initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 30 }}
         animate={{ opacity: 1, y: 0 }}

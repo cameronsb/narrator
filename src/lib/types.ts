@@ -1,12 +1,10 @@
 // Presentation styles
-export const STYLES = ['narrative', 'minimal', 'educational', 'creative'] as const
+export const STYLES = ['narrative', 'informative'] as const
 export type Style = (typeof STYLES)[number]
 
 export const STYLE_CONFIG: Record<Style, { label: string; description: string }> = {
-  narrative: { label: 'Narrative', description: 'Story-driven, persuasive flow' },
-  minimal: { label: 'Minimal', description: 'Clean, factual presentation' },
-  educational: { label: 'Educational', description: 'Learning-focused with examples' },
-  creative: { label: 'Creative', description: 'Thought-provoking and inspiring' },
+  narrative: { label: 'Narrative', description: 'Pitches, proposals, keynotes' },
+  informative: { label: 'Informative', description: 'Reports, updates, training' },
 }
 
 // Voice options

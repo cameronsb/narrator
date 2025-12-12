@@ -55,8 +55,8 @@ describe('NarratorStore', () => {
     })
 
     it('should update style', () => {
-      useNarratorStore.getState().setStyle('minimal')
-      expect(useNarratorStore.getState().style).toBe('minimal')
+      useNarratorStore.getState().setStyle('informative')
+      expect(useNarratorStore.getState().style).toBe('informative')
     })
 
     it('should update voice', () => {

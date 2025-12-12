@@ -122,7 +122,7 @@ export function validateImportData(data: unknown): { valid: boolean; error?: str
   }
 
   // Validate style
-  const validStyles = ['narrative', 'minimal', 'educational', 'creative']
+  const validStyles = ['narrative', 'informative']
   if (!validStyles.includes(obj.style as string)) {
     return { valid: false, error: 'This file is missing required data' }
   }

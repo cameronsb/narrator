@@ -1,42 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Presentation style configurations
+// Presentation style configurations with toolkit approach
 const STYLES = {
   narrative: {
     description: 'Persuasive, story-driven presentation',
-    instructions: `Create a persuasive, story-driven presentation with:
-- A hook that captures attention
-- Clear problem/opportunity framing
-- Building narrative arc
-- Compelling call to action
-Speaker scripts should be conversational and persuasive.`,
+    instructions: `Create a NARRATIVE presentation that persuades and inspires action.
+
+TOOLKIT - use these techniques if (and only if) they serve the content (not mechanically on every slide):
+- Story arc: setup → tension/challenge → resolution
+- Rhetorical questions to engage the audience
+- Analogies and metaphors to make abstract concepts vivid
+- Contrast: before/after, problem/solution, old way/new way
+- Emotional stakes: why this matters, what's at risk, what's possible
+- Direct "you" language to address the audience personally
+- Clear call to action toward the end
+
+GOAL: Move the audience toward action, belief, or decision.
+TONE: Conversational, engaging, builds momentum.
+Scripts should feel like someone telling a compelling story.`,
   },
-  minimal: {
-    description: 'Clean, factual presentation',
-    instructions: `Create a clean, factual presentation that:
-- Simply organizes the information clearly
-- Avoids adding spin or narrative
-- Lets the content speak for itself
-Speaker scripts should be straightforward readings of the content.`,
-  },
-  educational: {
-    description: 'Learning-focused presentation',
-    instructions: `Create a learning-focused presentation with:
-- Clear learning objectives
-- Logical concept progression
-- Examples and explanations
-- Summary of key takeaways
-Speaker scripts should explain concepts clearly with analogies.`,
-  },
-  creative: {
-    description: 'Thought-provoking presentation',
-    instructions: `Create an engaging, thought-provoking presentation with:
-- Surprising angles and questions
-- Creative framing and metaphors
-- Energy and momentum
-Speaker scripts should inspire and spark curiosity.`,
+  informative: {
+    description: 'Clear, educational presentation',
+    instructions: `Create an INFORMATIVE presentation that clarifies and educates.
+
+TOOLKIT - use these techniques if (and only if) they serve the content (not mechanically on every slide):
+- Logical organization: by topic, chronology, or priority
+- Clear definitions for terminology or concepts
+- Concrete examples to illustrate abstract points
+- Data and evidence to support claims
+- Summaries to reinforce key takeaways
+- Neutral, precise language
+
+GOAL: Help the audience understand clearly and retain information.
+TONE: Clear, organized, authoritative but accessible.
+Scripts should explain concepts thoroughly but efficiently.`,
   },
 } as const
+
+// TODO: Add few-shot examples for each style to improve output consistency
 
 // Expected JSON output schema (for prompt)
 const OUTPUT_SCHEMA = `{
