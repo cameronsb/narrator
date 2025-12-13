@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { SavedPresentation } from './store'
 
 const DB_NAME = 'narrator-db'

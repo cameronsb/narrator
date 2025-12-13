@@ -155,7 +155,7 @@ export function SlideDisplay() {
                     transition={pointTransition(index)}
                     className="flex items-start gap-4 text-lg text-gray-700 sm:text-xl md:text-2xl"
                   >
-                    <span className="bg-primary mt-2 h-3 w-3 flex-shrink-0 rounded-full" />
+                    <span className="bg-primary mt-2 h-3 w-3 shrink-0 rounded-full" />
                     <span>{point}</span>
                   </motion.li>
                 ))}
